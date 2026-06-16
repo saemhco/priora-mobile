@@ -48,3 +48,9 @@ app.*.map.json
 /web
 /macos
 /linux
+
+# Environment variables
+.env
+
+# FVM Version Cache
+.fvm/

@@ -34,11 +34,16 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  flutter_riverpod: ^3.3.1
   go_router: ^17.3.0
-  riverpod_annotation: ^4.0.2
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0
+  flutter_dotenv: ^6.0.1
+  dio: ^5.9.2
+  flutter_bloc: ^9.1.1
+  bloc: ^9.2.1
+  google_sign_in: ^6.2.1
+  intl_phone_number_input: ^0.7.4
+  geolocator: ^11.0.0
 
 dev_dependencies:
   flutter_test:
@@ -51,7 +56,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   build_runner: ^2.15.0
-  riverpod_generator: ^4.0.4-dev.1
   freezed: ^3.2.6-dev.1
   json_serializable: ^6.14.0
 
@@ -69,6 +73,7 @@ flutter:
   assets:
     - assets/images/onboarding_hero.png
     - assets/images/login_bg.png
+    - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
