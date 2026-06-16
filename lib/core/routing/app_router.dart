@@ -3,7 +3,7 @@ import 'package:priora/features/shared/onboarding/presentation/onboarding_screen
 import 'package:priora/features/shared/auth/presentation/login_screen.dart';
 import 'package:priora/features/shared/auth/presentation/register_screen.dart';
 import 'package:priora/features/shared/auth/presentation/complete_profile_screen.dart';
-import 'package:priora/features/patient/home/presentation/patient_home_screen.dart';
+import 'package:priora/features/patient/navigation/presentation/patient_navigation_screen.dart';
 import 'package:priora/features/doctor/home/presentation/doctor_home_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -27,7 +27,7 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/patient',
-      builder: (context, state) => const PatientHomeScreen(),
+      builder: (context, state) => const PatientNavigationScreen(),
     ),
     GoRoute(
       path: '/doctor',
