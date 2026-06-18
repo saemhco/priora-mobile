@@ -15,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthGoogleLoginRequested>(_onGoogleLoginRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthUpdateProfileRequested>(_onUpdateProfileRequested);
+    on<AuthLoadProfileRequested>(_onLoadProfileRequested);
   }
 
   Future<void> _onRegisterRequested(
@@ -43,11 +44,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthLoading());
     try {
       final result = await _authRepository.login(event.email, event.password);
+      String? firstName;
+      String? lastName;
+      String? profilePhotoUrl;
+
+      if (result.user.profileComplete) {
+        try {
+          final profile = await _authRepository.getProfile(accessToken: result.accessToken);
+          firstName = profile['firstName'];
+          lastName = profile['lastName'];
+          profilePhotoUrl = profile['profilePhotoUrl'];
+        } catch (_) {}
+      }
+
       emit(
         AuthAuthenticated(
           role: result.user.role.toLowerCase(),
           accessToken: result.accessToken,
           profileComplete: result.user.profileComplete,
+          firstName: firstName,
+          lastName: lastName,
+          profilePhotoUrl: profilePhotoUrl,
         ),
       );
     } catch (e) {
@@ -83,11 +100,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final standardizedRole = (role == 'medico' || role == 'doctor')
           ? 'doctor'
           : 'patient';
+
+      String? firstName;
+      String? lastName;
+      String? profilePhotoUrl;
+
+      if (result.user.profileComplete) {
+        try {
+          final profile = await _authRepository.getProfile(accessToken: result.accessToken);
+          firstName = profile['firstName'];
+          lastName = profile['lastName'];
+          profilePhotoUrl = profile['profilePhotoUrl'];
+        } catch (_) {}
+      }
+
       emit(
         AuthAuthenticated(
           role: standardizedRole,
           accessToken: result.accessToken,
           profileComplete: result.user.profileComplete,
+          firstName: firstName,
+          lastName: lastName,
+          profilePhotoUrl: profilePhotoUrl,
         ),
       );
     } catch (e) {
@@ -110,10 +144,42 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           role: event.role,
           accessToken: event.accessToken,
           profileComplete: true,
+          firstName: event.profileData['firstName'],
+          lastName: event.profileData['lastName'],
+          profilePhotoUrl: event.profileData['profilePhotoUrl'],
         ),
       );
     } catch (e) {
       emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+      emit(
+        AuthAuthenticated(
+          role: event.role,
+          accessToken: event.accessToken,
+          profileComplete: false,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onLoadProfileRequested(
+    AuthLoadProfileRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is AuthAuthenticated) {
+      try {
+        final profile = await _authRepository.getProfile(accessToken: currentState.accessToken);
+        emit(
+          AuthAuthenticated(
+            role: currentState.role,
+            accessToken: currentState.accessToken,
+            profileComplete: currentState.profileComplete,
+            firstName: profile['firstName'],
+            lastName: profile['lastName'],
+            profilePhotoUrl: profile['profilePhotoUrl'],
+          ),
+        );
+      } catch (_) {}
     }
   }
 

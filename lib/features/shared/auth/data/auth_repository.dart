@@ -100,4 +100,44 @@ class AuthRepository {
       throw Exception(e.message ?? 'Error de conexión');
     }
   }
+
+  Future<Map<String, dynamic>> getProfile({
+    required String accessToken,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/users/me/profile',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      if (response.statusCode == 200) {
+        return response.data as Map<String, dynamic>;
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception('Sesión expirada o no autorizada');
+      }
+      throw Exception(e.message ?? 'Error de conexión');
+    }
+    throw Exception('Error al obtener el perfil');
+  }
+
+  Future<List<dynamic>> getMyAppointments({
+    required String accessToken,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/appointments/me',
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      if (response.statusCode == 200) {
+        return response.data as List<dynamic>;
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw Exception('Sesión expirada o no autorizada');
+      }
+      throw Exception(e.message ?? 'Error de conexión');
+    }
+    throw Exception('Error al obtener las citas');
+  }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:priora/features/patient/appointments/presentation/appointments_screen.dart';
 import 'package:priora/features/patient/home/presentation/patient_home_screen.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/navigation/presentation/widgets/patient_nav_item.dart';
 import 'package:priora/features/patient/navigation/presentation/widgets/placeholder_tab.dart';
+import 'package:priora/features/patient/profile/presentation/patient_profile_screen.dart';
 
 class PatientNavigationScreen extends StatefulWidget {
   const PatientNavigationScreen({super.key});
@@ -14,11 +16,11 @@ class PatientNavigationScreen extends StatefulWidget {
 class _PatientNavigationScreenState extends State<PatientNavigationScreen> {
   final PatientNavigationController _controller = PatientNavigationController();
 
-  final List<Widget> _tabs = const [
-    PatientHomeScreen(),
-    PlaceholderTab(title: 'Evaluación IA', icon: Icons.psychology_outlined),
-    PlaceholderTab(title: 'Mis Citas', icon: Icons.calendar_today_rounded),
-    PlaceholderTab(title: 'Historial', icon: Icons.history_rounded),
+  final List<Widget> _tabs = [
+    const PatientHomeScreen(),
+    const PlaceholderTab(title: 'Evaluación IA', icon: Icons.psychology_outlined),
+    const PatientAppointmentsScreen(),
+    const PatientProfileScreen(),
   ];
 
   @override
@@ -66,7 +68,7 @@ class _PatientNavigationScreenState extends State<PatientNavigationScreen> {
               _buildNavItem(0, Icons.home_rounded, 'Inicio'),
               _buildNavItem(1, Icons.assignment_outlined, 'Evaluación IA'),
               _buildNavItem(2, Icons.calendar_today_outlined, 'Mis citas'),
-              _buildNavItem(3, Icons.history_rounded, 'Historial'),
+              _buildNavItem(3, Icons.person_outline_rounded, 'Perfil'),
             ],
           ),
         ),

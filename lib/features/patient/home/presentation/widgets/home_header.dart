@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 import 'package:priora/features/shared/auth/data/auth_event.dart';
+import 'package:priora/features/shared/auth/data/auth_state.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -14,22 +15,41 @@ class HomeHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Mock Avatar
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
-          ),
-          child: ClipOval(
-            child: Image.network(
-              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100',
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.person, color: Color(0xFF64748B)),
-            ),
-          ),
+        // Dynamic Avatar from API
+        BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            String? photoUrl;
+            if (state is AuthAuthenticated) {
+              photoUrl = state.profilePhotoUrl;
+            }
+            final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
+
+            return Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+              ),
+              child: ClipOval(
+                child: hasPhoto
+                    ? Image.network(
+                        photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.person, color: Color(0xFF64748B)),
+                      )
+                    : Container(
+                        color: const Color(0xFFE2E8F0),
+                        child: const Icon(
+                          Icons.person,
+                          color: Color(0xFF64748B),
+                          size: 24,
+                        ),
+                      ),
+              ),
+            );
+          },
         ),
         // Priora Title
         Text(

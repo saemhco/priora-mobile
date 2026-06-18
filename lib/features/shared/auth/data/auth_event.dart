@@ -35,3 +35,7 @@ class AuthUpdateProfileRequested extends AuthEvent {
     required this.role,
   });
 }
+
+class AuthLoadProfileRequested extends AuthEvent {
+  const AuthLoadProfileRequested();
+}
