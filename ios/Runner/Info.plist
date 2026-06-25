@@ -72,5 +72,9 @@
 	<string>Esta aplicación necesita acceder a tu ubicación para registrar tu dirección en el perfil.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Esta aplicación necesita acceder a tu ubicación para registrar tu dirección en el perfil.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Esta aplicación necesita acceder a la cámara para que puedas tomar y adjuntar fotos de tus síntomas.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Esta aplicación necesita acceder a tu galería para que puedas seleccionar y adjuntar imágenes de tus síntomas.</string>
 </dict>
 </plist>

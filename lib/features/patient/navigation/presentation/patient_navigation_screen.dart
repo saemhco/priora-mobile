@@ -1,52 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:priora/features/patient/appointments/presentation/appointments_screen.dart';
 import 'package:priora/features/patient/home/presentation/patient_home_screen.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/navigation/presentation/widgets/patient_nav_item.dart';
 import 'package:priora/features/patient/navigation/presentation/widgets/placeholder_tab.dart';
 import 'package:priora/features/patient/profile/presentation/patient_profile_screen.dart';
+import 'package:priora/features/patient/triage/presentation/health_screen.dart';
+import 'package:priora/features/shared/auth/data/auth_bloc.dart';
+import 'package:priora/features/shared/auth/data/auth_state.dart';
 
 class PatientNavigationScreen extends StatefulWidget {
   const PatientNavigationScreen({super.key});
 
   @override
-  State<PatientNavigationScreen> createState() => _PatientNavigationScreenState();
+  State<PatientNavigationScreen> createState() =>
+      _PatientNavigationScreenState();
 }
 
 class _PatientNavigationScreenState extends State<PatientNavigationScreen> {
-  final PatientNavigationController _controller = PatientNavigationController();
-
   final List<Widget> _tabs = [
     const PatientHomeScreen(),
-    const PlaceholderTab(title: 'Evaluación IA', icon: Icons.psychology_outlined),
+    const HealthScreen(),
     const PatientAppointmentsScreen(),
     const PatientProfileScreen(),
   ];
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _controller,
-      builder: (context, child) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
-          body: SafeArea(
-            bottom: false,
-            child: _tabs[_controller.currentIndex],
-          ),
-          bottomNavigationBar: _buildBottomNavigationBar(),
-        );
-      },
+    return BlocProvider<PatientNavigationCubit>(
+      create: (context) => PatientNavigationCubit(),
+      child: BlocBuilder<PatientNavigationCubit, int>(
+        builder: (context, currentIndex) {
+          return Scaffold(
+            backgroundColor: const Color(0xFFF8FAFC),
+            body: SafeArea(bottom: false, child: _tabs[currentIndex]),
+            bottomNavigationBar: _buildBottomNavigationBar(
+              context,
+              currentIndex,
+            ),
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(BuildContext context, int currentIndex) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -65,10 +64,34 @@ class _PatientNavigationScreenState extends State<PatientNavigationScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(0, Icons.home_rounded, 'Inicio'),
-              _buildNavItem(1, Icons.assignment_outlined, 'Evaluación IA'),
-              _buildNavItem(2, Icons.calendar_today_outlined, 'Mis citas'),
-              _buildNavItem(3, Icons.person_outline_rounded, 'Perfil'),
+              _buildNavItem(
+                context,
+                currentIndex,
+                0,
+                Icons.home_rounded,
+                'Inicio',
+              ),
+              _buildNavItem(
+                context,
+                currentIndex,
+                1,
+                Icons.favorite_border_rounded,
+                'Salud',
+              ),
+              _buildNavItem(
+                context,
+                currentIndex,
+                2,
+                Icons.calendar_today_outlined,
+                'Mis citas',
+              ),
+              _buildNavItem(
+                context,
+                currentIndex,
+                3,
+                Icons.person_outline_rounded,
+                'Perfil',
+              ),
             ],
           ),
         ),
@@ -76,13 +99,19 @@ class _PatientNavigationScreenState extends State<PatientNavigationScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(
+    BuildContext context,
+    int currentIndex,
+    int index,
+    IconData icon,
+    String label,
+  ) {
     return PatientNavItem(
       index: index,
       icon: icon,
       label: label,
-      isSelected: _controller.currentIndex == index,
-      onTap: () => _controller.changeIndex(index),
+      isSelected: currentIndex == index,
+      onTap: () => context.read<PatientNavigationCubit>().changeIndex(index),
     );
   }
 }

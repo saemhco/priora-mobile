@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 
 class AIEvaluationCard extends StatelessWidget {
   const AIEvaluationCard({super.key});
@@ -77,7 +79,9 @@ class AIEvaluationCard extends StatelessWidget {
 
           // CTA Button
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              context.read<PatientNavigationCubit>().changeIndex(1);
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white.withOpacity(0.15),
               foregroundColor: Colors.white,

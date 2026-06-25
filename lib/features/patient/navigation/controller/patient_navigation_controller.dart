@@ -1,13 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class PatientNavigationController extends ChangeNotifier {
-  int _currentIndex = 0;
-
-  int get currentIndex => _currentIndex;
+class PatientNavigationCubit extends Cubit<int> {
+  PatientNavigationCubit() : super(0);
 
   void changeIndex(int newIndex) {
-    if (_currentIndex == newIndex) return;
-    _currentIndex = newIndex;
-    notifyListeners();
+    if (state == newIndex) return;
+    emit(newIndex);
   }
 }
