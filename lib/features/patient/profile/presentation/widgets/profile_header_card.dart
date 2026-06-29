@@ -4,9 +4,10 @@ import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 import 'package:priora/features/shared/auth/data/auth_state.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
+  final Map<String, dynamic>? profile;
   final VoidCallback onEdit;
 
-  const ProfileHeaderCard({super.key, required this.onEdit});
+  const ProfileHeaderCard({super.key, this.profile, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +16,20 @@ class ProfileHeaderCard extends StatelessWidget {
         String fullName = 'Paciente';
         String? photoUrl;
 
-        if (state is AuthAuthenticated) {
+        if (profile != null) {
+          final first = profile!['firstName'] ?? '';
+          final last = profile!['lastName'] ?? '';
+          fullName = '$first $last'.trim();
+          if (fullName.isEmpty) fullName = 'Paciente';
+          photoUrl = profile!['profilePhotoUrl'];
+        } else if (state is AuthAuthenticated) {
           final first = state.firstName ?? '';
           final last = state.lastName ?? '';
           fullName = '$first $last'.trim();
           if (fullName.isEmpty) fullName = 'Paciente';
           photoUrl = state.profilePhotoUrl;
         }
+
 
         final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
-import 'package:priora/features/patient/triage/presentation/widgets/triage_header.dart';
 
 class TriageResultView extends StatelessWidget {
   final TriageState state;

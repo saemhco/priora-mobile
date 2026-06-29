@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
 import 'package:priora/features/patient/triage/data/triage_history_item.dart';
 import 'package:priora/features/patient/triage/data/triage_repository.dart';
@@ -35,10 +34,14 @@ class _HealthScreenState extends State<HealthScreen> {
 
     try {
       final authState = context.read<AuthBloc>().state;
-      final accessToken = authState is AuthAuthenticated ? authState.accessToken : '';
+      final accessToken = authState is AuthAuthenticated
+          ? authState.accessToken
+          : '';
 
       final repository = RepositoryProvider.of<TriageRepository>(context);
-      final history = await repository.getTriageHistory(accessToken: accessToken);
+      final history = await repository.getTriageHistory(
+        accessToken: accessToken,
+      );
 
       if (mounted) {
         setState(() {
@@ -68,8 +71,18 @@ class _HealthScreenState extends State<HealthScreen> {
     }
 
     final months = [
-      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
     ];
     return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
   }
@@ -121,7 +134,10 @@ class _HealthScreenState extends State<HealthScreen> {
             ),
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20.0,
+                  vertical: 16.0,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,11 +164,10 @@ class _HealthScreenState extends State<HealthScreen> {
                 ),
               ),
               if (_isLoading)
-                const SliverFillRemaining(
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF0256C2),
-                    ),
+                const SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  sliver: SliverToBoxAdapter(
+                    child: TriageHistorySkeleton(),
                   ),
                 )
               else if (_errorMessage != null)
@@ -163,12 +178,19 @@ class _HealthScreenState extends State<HealthScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error_outline_rounded, size: 48, color: Colors.redAccent),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            size: 48,
+                            color: Colors.redAccent,
+                          ),
                           const SizedBox(height: 12),
                           Text(
                             _errorMessage!,
                             textAlign: TextAlign.center,
-                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                            style: const TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 14,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           ElevatedButton(
@@ -178,7 +200,7 @@ class _HealthScreenState extends State<HealthScreen> {
                               foregroundColor: Colors.white,
                             ),
                             child: const Text('Reintentar'),
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -194,11 +216,18 @@ class _HealthScreenState extends State<HealthScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: const [
-                            Icon(Icons.assignment_outlined, size: 48, color: Color(0xFF94A3B8)),
+                            Icon(
+                              Icons.assignment_outlined,
+                              size: 48,
+                              color: Color(0xFF94A3B8),
+                            ),
                             SizedBox(height: 12),
                             Text(
                               'No tienes evaluaciones previas.',
-                              style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                              style: TextStyle(
+                                color: Color(0xFF64748B),
+                                fontSize: 14,
+                              ),
                             ),
                           ],
                         ),
@@ -210,247 +239,275 @@ class _HealthScreenState extends State<HealthScreen> {
                 SliverPadding(
                   padding: const EdgeInsets.symmetric(horizontal: 20.0),
                   sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = _historyItems![index];
-                        final priorityColor = _getPriorityColor(item.priority);
-                        final priorityBg = _getPriorityBgColor(item.priority);
-                        final priorityLabel = _getPriorityLabel(item.priority);
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      final item = _historyItems![index];
+                      final priorityColor = _getPriorityColor(item.priority);
+                      final priorityBg = _getPriorityBgColor(item.priority);
+                      final priorityLabel = _getPriorityLabel(item.priority);
 
-                        return GestureDetector(
-                          onTap: () async {
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (context) => Dialog(
-                                elevation: 0,
-                                backgroundColor: Colors.transparent,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(24),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.08),
-                                        blurRadius: 24,
-                                        offset: const Offset(0, 8),
+                      return GestureDetector(
+                        onTap: () async {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => Dialog(
+                              elevation: 0,
+                              backgroundColor: Colors.transparent,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 28,
+                                  horizontal: 24,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.08),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const SizedBox(
+                                      height: 40,
+                                      width: 40,
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFF0256C2),
+                                        strokeWidth: 4,
                                       ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const SizedBox(
-                                        height: 40,
-                                        width: 40,
-                                        child: CircularProgressIndicator(
-                                          color: Color(0xFF0256C2),
-                                          strokeWidth: 4,
-                                        ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    const Text(
+                                      'Cargando',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1E293B),
                                       ),
-                                      const SizedBox(height: 24),
-                                      const Text(
-                                        'Cargando',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF1E293B),
-                                        ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    const Text(
+                                      'Obteniendo resultados del triaje...',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFF64748B),
                                       ),
-                                      const SizedBox(height: 6),
-                                      const Text(
-                                        'Obteniendo resultados del triaje...',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Color(0xFF64748B),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
+                            ),
+                          );
+
+                          try {
+                            final authState = context.read<AuthBloc>().state;
+                            final accessToken = authState is AuthAuthenticated
+                                ? authState.accessToken
+                                : '';
+
+                            final repository =
+                                RepositoryProvider.of<TriageRepository>(
+                                  context,
+                                );
+                            final result = await repository.getTriageResult(
+                              accessToken: accessToken,
+                              id: item.id,
                             );
 
-                            try {
-                              final authState = context.read<AuthBloc>().state;
-                              final accessToken = authState is AuthAuthenticated ? authState.accessToken : '';
+                            if (context.mounted) {
+                              Navigator.pop(context); // Close loading dialog
 
-                              final repository = RepositoryProvider.of<TriageRepository>(context);
-                              final result = await repository.getTriageResult(
-                                accessToken: accessToken,
-                                id: item.id,
+                              final rawSpecialties =
+                                  result['suggestedSpecialties'];
+                              List<String> specs = [];
+                              if (rawSpecialties is List) {
+                                specs = rawSpecialties
+                                    .map((s) => s.toString())
+                                    .toList();
+                              } else if (result['suggestedSpecialty'] != null) {
+                                specs = [
+                                  result['suggestedSpecialty'].toString(),
+                                ];
+                              }
+
+                              final state = TriageState(
+                                priority: result['priority']?.toString(),
+                                suggestedSpecialty: result['suggestedSpecialty']
+                                    ?.toString(),
+                                suggestedSpecialties: specs,
+                                patientSafeMessage: result['patientSafeMessage']
+                                    ?.toString(),
+                                isCompleted: true,
+                                currentStep: 4,
                               );
 
-                              if (context.mounted) {
-                                Navigator.pop(context); // Close loading dialog
-
-                                final rawSpecialties = result['suggestedSpecialties'];
-                                List<String> specs = [];
-                                if (rawSpecialties is List) {
-                                  specs = rawSpecialties.map((s) => s.toString()).toList();
-                                } else if (result['suggestedSpecialty'] != null) {
-                                  specs = [result['suggestedSpecialty'].toString()];
-                                }
-
-                                final state = TriageState(
-                                  priority: result['priority']?.toString(),
-                                  suggestedSpecialty: result['suggestedSpecialty']?.toString(),
-                                  suggestedSpecialties: specs,
-                                  patientSafeMessage: result['patientSafeMessage']?.toString(),
-                                  isCompleted: true,
-                                  currentStep: 4,
-                                );
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => TriageResultScreen(state: state),
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              if (context.mounted) {
-                                Navigator.pop(context); // Close loading dialog
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('Error al cargar detalle: $e'),
-                                    backgroundColor: Colors.redAccent,
-                                  ),
-                                );
-                              }
-                            }
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(bottom: 16.0),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.02),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      TriageResultScreen(state: state),
                                 ),
-                              ],
-                              border: Border.all(
-                                color: const Color(0xFFE2E8F0),
-                                width: 1,
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              Navigator.pop(context); // Close loading dialog
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error al cargar detalle: $e'),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16.0),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
-                            child: IntrinsicHeight(
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Container(
-                                    width: 5,
-                                    decoration: BoxDecoration(
-                                      color: priorityColor,
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        bottomLeft: Radius.circular(16),
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                _formatDate(item.createdAt),
-                                                style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Color(0xFF64748B),
-                                                 fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8,
-                                                  vertical: 4,
-                                                ),
-                                                decoration: BoxDecoration(
-                                                  color: priorityBg,
-                                                  borderRadius: BorderRadius.circular(12),
-                                                ),
-                                                child: Text(
-                                                  priorityLabel,
-                                                  style: TextStyle(
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: priorityColor,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            item.symptoms ?? 'Evaluación de síntomas',
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: Color(0xFF1E293B),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.medical_services_outlined,
-                                                size: 14,
-                                                color: priorityColor,
-                                              ),
-                                              const SizedBox(width: 6),
-                                              Expanded(
-                                                child: Text(
-                                                  'Sugerencia: ${item.suggestedSpecialty ?? "Evaluación general"}',
-                                                  style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Color(0xFF64748B),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                  maxLines: 1,
-                                                  overflow: TextOverflow.ellipsis,
-                                                ),
-                                              ),
-                                              const Icon(
-                                                Icons.chevron_right_rounded,
-                                                size: 18,
-                                                color: Color(0xFF64748B),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                            ],
+                            border: Border.all(
+                              color: const Color(0xFFE2E8F0),
+                              width: 1,
                             ),
                           ),
-                        );
-                      },
-                      childCount: _historyItems?.length ?? 0,
-                    ),
+                          child: IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Container(
+                                  width: 5,
+                                  decoration: BoxDecoration(
+                                    color: priorityColor,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              _formatDate(item.createdAt),
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Color(0xFF64748B),
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 4,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: priorityBg,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                priorityLabel,
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: priorityColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          item.symptoms ??
+                                              'Evaluación de síntomas',
+                                          style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.medical_services_outlined,
+                                              size: 14,
+                                              color: priorityColor,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                'Sugerencia: ${item.suggestedSpecialty ?? "Evaluación general"}',
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Color(0xFF64748B),
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            const Icon(
+                                              Icons.chevron_right_rounded,
+                                              size: 18,
+                                              color: Color(0xFF64748B),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }, childCount: _historyItems?.length ?? 0),
                   ),
                 ),
               SliverPadding(
-                padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0, top: 10.0),
+                padding: const EdgeInsets.only(
+                  left: 20.0,
+                  right: 20.0,
+                  bottom: 20.0,
+                  top: 10.0,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Container(
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF76F2E3), // Solid bright cyan from mockup
+                      color: const Color(
+                        0xFF76F2E3,
+                      ), // Solid bright cyan from mockup
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 22),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 22,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -481,7 +538,10 @@ class _HealthScreenState extends State<HealthScreen> {
                                 elevation: 0,
                                 backgroundColor: Colors.transparent,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 28,
+                                    horizontal: 24,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(24),
@@ -531,13 +591,21 @@ class _HealthScreenState extends State<HealthScreen> {
                             Map<String, dynamic>? draftData;
                             try {
                               final authState = context.read<AuthBloc>().state;
-                              final accessToken = authState is AuthAuthenticated ? authState.accessToken : '';
+                              final accessToken = authState is AuthAuthenticated
+                                  ? authState.accessToken
+                                  : '';
 
-                              final repository = RepositoryProvider.of<TriageRepository>(context);
-                              final result = await repository.getTriageDraft(accessToken: accessToken);
-                              
+                              final repository =
+                                  RepositoryProvider.of<TriageRepository>(
+                                    context,
+                                  );
+                              final result = await repository.getTriageDraft(
+                                accessToken: accessToken,
+                              );
+
                               if (result != null && result['draft'] != null) {
-                                draftData = result['draft'] as Map<String, dynamic>?;
+                                draftData =
+                                    result['draft'] as Map<String, dynamic>?;
                               }
                             } catch (_) {
                               // If loading draft fails, just ignore and proceed
@@ -556,7 +624,11 @@ class _HealthScreenState extends State<HealthScreen> {
                                       ),
                                       title: const Row(
                                         children: [
-                                          Icon(Icons.info_outline_rounded, color: Color(0xFF0256C2), size: 28),
+                                          Icon(
+                                            Icons.info_outline_rounded,
+                                            color: Color(0xFF0256C2),
+                                            size: 28,
+                                          ),
                                           SizedBox(width: 10),
                                           Text(
                                             'Evaluación pendiente',
@@ -579,11 +651,14 @@ class _HealthScreenState extends State<HealthScreen> {
                                       actions: [
                                         TextButton(
                                           onPressed: () {
-                                            Navigator.pop(dialogContext); // Close dialog
+                                            Navigator.pop(
+                                              dialogContext,
+                                            ); // Close dialog
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => const TriageScreen(),
+                                                builder: (context) =>
+                                                    const TriageScreen(),
                                               ),
                                             ).then((_) => _fetchHistory());
                                           },
@@ -597,20 +672,28 @@ class _HealthScreenState extends State<HealthScreen> {
                                         ),
                                         ElevatedButton(
                                           onPressed: () {
-                                            Navigator.pop(dialogContext); // Close dialog
+                                            Navigator.pop(
+                                              dialogContext,
+                                            ); // Close dialog
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
-                                                builder: (context) => TriageScreen(initialDraft: draftData),
+                                                builder: (context) =>
+                                                    TriageScreen(
+                                                      initialDraft: draftData,
+                                                    ),
                                               ),
                                             ).then((_) => _fetchHistory());
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF0256C2),
+                                            backgroundColor: const Color(
+                                              0xFF0256C2,
+                                            ),
                                             foregroundColor: Colors.white,
                                             elevation: 0,
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
                                           ),
                                           child: const Text(
@@ -636,19 +719,26 @@ class _HealthScreenState extends State<HealthScreen> {
                               }
                             }
                           },
-                          icon: const Icon(Icons.add, size: 18, color: Colors.white),
+                          icon: const Icon(
+                            Icons.add,
+                            size: 18,
+                            color: Colors.white,
+                          ),
                           label: const Text(
                             'Nueva Evaluación',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0256C2), // Dark blue
+                            backgroundColor: const Color(
+                              0xFF0256C2,
+                            ), // Dark blue
                             foregroundColor: Colors.white,
                             shape: const StadiumBorder(), // Pill shaped button
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -658,6 +748,146 @@ class _HealthScreenState extends State<HealthScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class TriageHistorySkeleton extends StatefulWidget {
+  const TriageHistorySkeleton({super.key});
+
+  @override
+  State<TriageHistorySkeleton> createState() => _TriageHistorySkeletonState();
+}
+
+class _TriageHistorySkeletonState extends State<TriageHistorySkeleton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.35, end: 0.85).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _animation.value,
+          child: child,
+        );
+      },
+      child: Column(
+        children: List.generate(3, (index) => _buildSkeletonCard()),
+      ),
+    );
+  }
+
+  Widget _buildSkeletonCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 5,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE2E8F0),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        Container(
+                          width: 60,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      width: 180,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE2E8F0),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFE2E8F0),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 120,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

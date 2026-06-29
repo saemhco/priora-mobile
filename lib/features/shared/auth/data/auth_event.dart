@@ -39,3 +39,37 @@ class AuthUpdateProfileRequested extends AuthEvent {
 class AuthLoadProfileRequested extends AuthEvent {
   const AuthLoadProfileRequested();
 }
+
+class AuthRestoreSessionRequested extends AuthEvent {
+  const AuthRestoreSessionRequested();
+}
+
+class AuthSessionSaved extends AuthEvent {
+  final String role;
+  final String accessToken;
+  final bool profileComplete;
+  final String? firstName;
+  final String? lastName;
+  final String? profilePhotoUrl;
+
+  const AuthSessionSaved({
+    required this.role,
+    required this.accessToken,
+    required this.profileComplete,
+    this.firstName,
+    this.lastName,
+    this.profilePhotoUrl,
+  });
+}
+
+class AuthTokenRefreshed extends AuthEvent {
+  final String accessToken;
+  final String refreshToken;
+
+  const AuthTokenRefreshed({
+    required this.accessToken,
+    required this.refreshToken,
+  });
+}
+
+

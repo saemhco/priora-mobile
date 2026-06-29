@@ -1,10 +1,31 @@
 import 'package:flutter/material.dart';
 
 class PersonalInfoCard extends StatelessWidget {
-  const PersonalInfoCard({super.key});
+  final Map<String, dynamic>? profile;
+  const PersonalInfoCard({super.key, this.profile});
 
   @override
   Widget build(BuildContext context) {
+    final docType = profile?['documentType'] ?? 'DNI';
+    final docNum = profile?['documentId'] ?? 'No registrado';
+    final phone = profile?['phone'] ?? 'No registrado';
+    final occupation = profile?['occupation'] ?? 'No registrada';
+    
+    // Format Biological Sex
+    final rawSex = profile?['biologicalSex']?.toString().toUpperCase();
+    final biologicalSex = rawSex == 'MALE'
+        ? 'Masculino'
+        : (rawSex == 'FEMALE' ? 'Femenino' : 'No registrado');
+
+    // Format Gender Identity
+    final rawGender = profile?['genderIdentity']?.toString().toUpperCase();
+    final genderIdentity = rawGender == 'MAN'
+        ? 'Hombre'
+        : (rawGender == 'WOMAN' ? 'Mujer' : (profile?['genderIdentity'] ?? 'No registrado'));
+
+    // Format DOB
+    final dobStr = profile?['dateOfBirth'] ?? 'No registrada';
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -46,48 +67,57 @@ class PersonalInfoCard extends StatelessWidget {
           // Identity Doc
           _buildInfoRow(
             label: 'DOCUMENTO DE IDENTIDAD',
-            value: 'DNI 45829103',
+            value: '$docType $docNum',
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.0),
+            padding: EdgeInsets.symmetric(vertical: 10.0),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
           // Birthdate
           _buildInfoRow(
             label: 'FECHA DE NACIMIENTO',
-            value: '14 de Julio, 1982',
+            value: dobStr,
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.0),
+            padding: EdgeInsets.symmetric(vertical: 10.0),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
-          // Blood Type
-          const Text(
-            'TIPO DE SANGRE',
-            style: TextStyle(
-              color: Color(0xFF94A3B8),
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.5,
-            ),
+          // Phone
+          _buildInfoRow(
+            label: 'TELÉFONO',
+            value: phone,
           ),
-          const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFEE2E2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'O+',
-              style: TextStyle(
-                color: Color(0xFFEF4444),
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.0),
+            child: Divider(color: Color(0xFFF1F5F9), height: 1),
+          ),
+
+          // Occupation
+          _buildInfoRow(
+            label: 'OCUPACIÓN',
+            value: occupation,
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.0),
+            child: Divider(color: Color(0xFFF1F5F9), height: 1),
+          ),
+
+          // Biological Sex
+          _buildInfoRow(
+            label: 'SEXO BIOLÓGICO',
+            value: biologicalSex,
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 10.0),
+            child: Divider(color: Color(0xFFF1F5F9), height: 1),
+          ),
+
+          // Gender Identity
+          _buildInfoRow(
+            label: 'IDENTIDAD DE GÉNERO',
+            value: genderIdentity,
           ),
         ],
       ),

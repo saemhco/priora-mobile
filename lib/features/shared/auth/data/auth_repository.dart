@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:priora/features/shared/auth/data/models/auth_response.dart';
 
 class AuthRepository {
@@ -101,9 +100,7 @@ class AuthRepository {
     }
   }
 
-  Future<Map<String, dynamic>> getProfile({
-    required String accessToken,
-  }) async {
+  Future<Map<String, dynamic>> getProfile({required String accessToken}) async {
     try {
       final response = await _dio.get(
         '/users/me/profile',
@@ -121,9 +118,7 @@ class AuthRepository {
     throw Exception('Error al obtener el perfil');
   }
 
-  Future<List<dynamic>> getMyAppointments({
-    required String accessToken,
-  }) async {
+  Future<List<dynamic>> getMyAppointments({required String accessToken}) async {
     try {
       final response = await _dio.get(
         '/appointments/me',

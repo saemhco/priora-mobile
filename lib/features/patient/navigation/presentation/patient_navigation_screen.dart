@@ -4,11 +4,8 @@ import 'package:priora/features/patient/appointments/presentation/appointments_s
 import 'package:priora/features/patient/home/presentation/patient_home_screen.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/navigation/presentation/widgets/patient_nav_item.dart';
-import 'package:priora/features/patient/navigation/presentation/widgets/placeholder_tab.dart';
 import 'package:priora/features/patient/profile/presentation/patient_profile_screen.dart';
 import 'package:priora/features/patient/triage/presentation/health_screen.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
 
 class PatientNavigationScreen extends StatefulWidget {
   const PatientNavigationScreen({super.key});
@@ -34,7 +31,13 @@ class _PatientNavigationScreenState extends State<PatientNavigationScreen> {
         builder: (context, currentIndex) {
           return Scaffold(
             backgroundColor: const Color(0xFFF8FAFC),
-            body: SafeArea(bottom: false, child: _tabs[currentIndex]),
+            body: SafeArea(
+              bottom: false,
+              child: IndexedStack(
+                index: currentIndex,
+                children: _tabs,
+              ),
+            ),
             bottomNavigationBar: _buildBottomNavigationBar(
               context,
               currentIndex,

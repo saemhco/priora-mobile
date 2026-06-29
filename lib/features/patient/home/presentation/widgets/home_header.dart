@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_event.dart';
 import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onNotificationsTap;
+
+  const HomeHeader({
+    super.key,
+    this.onProfileTap,
+    this.onNotificationsTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +21,7 @@ class HomeHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Dynamic Avatar from API
+        // Dynamic Avatar from API - taps to Profile tab
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             String? photoUrl;
@@ -24,29 +30,32 @@ class HomeHeader extends StatelessWidget {
             }
             final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
 
-            return Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
-              ),
-              child: ClipOval(
-                child: hasPhoto
-                    ? Image.network(
-                        photoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.person, color: Color(0xFF64748B)),
-                      )
-                    : Container(
-                        color: const Color(0xFFE2E8F0),
-                        child: const Icon(
-                          Icons.person,
-                          color: Color(0xFF64748B),
-                          size: 24,
+            return GestureDetector(
+              onTap: onProfileTap,
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
+                ),
+                child: ClipOval(
+                  child: hasPhoto
+                      ? Image.network(
+                          photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.person, color: Color(0xFF64748B)),
+                        )
+                      : Container(
+                          color: const Color(0xFFE2E8F0),
+                          child: const Icon(
+                            Icons.person,
+                            color: Color(0xFF64748B),
+                            size: 24,
+                          ),
                         ),
-                      ),
+                ),
               ),
             );
           },
@@ -69,7 +78,7 @@ class HomeHeader extends StatelessWidget {
                 color: Color(0xFF0256C2),
                 size: 28,
               ),
-              onPressed: () => _showLogoutBottomSheet(context),
+              onPressed: onNotificationsTap ?? () => context.push('/notifications'),
             ),
             Positioned(
               top: 12,
@@ -86,75 +95,6 @@ class HomeHeader extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-
-  void _showLogoutBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      builder: (bottomSheetContext) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                '¿Deseas cerrar sesión?',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(bottomSheetContext),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cancelar',
-                        style: TextStyle(color: Color(0xFF64748B)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(bottomSheetContext);
-                        context.read<AuthBloc>().add(
-                          const AuthLogoutRequested(),
-                        );
-                        context.go('/login');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text('Cerrar Sesión'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

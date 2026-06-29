@@ -45,6 +45,10 @@ dependencies:
   intl_phone_number_input: ^0.7.4
   geolocator: ^11.0.0
   image_picker: ^1.1.2
+  shared_preferences: ^2.5.5
+  mapbox_maps_flutter: ^2.0.0
+  get_it: ^7.7.0
+
 
 dev_dependencies:
   flutter_test:

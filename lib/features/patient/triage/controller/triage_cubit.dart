@@ -417,10 +417,10 @@ class TriageCubit extends Cubit<TriageState> {
       }
 
       if (result != null) {
-        final isReady = result!['ready'] == true;
+        final isReady = result['ready'] == true;
         print("[debug] checkCompletion: isReady=$isReady");
         if (isReady) {
-          final rawSpecialties = result!['suggestedSpecialties'];
+          final rawSpecialties = result['suggestedSpecialties'];
           List<String> specs = [];
           if (rawSpecialties is List) {
             specs = rawSpecialties.map((s) => s.toString()).toList();
@@ -433,16 +433,16 @@ class TriageCubit extends Cubit<TriageState> {
             state.copyWith(
               isCompleted: true,
               currentStep: 4,
-              priority: result!['priority']?.toString(),
-              suggestedSpecialty: result!['suggestedSpecialty']?.toString(),
+              priority: result['priority']?.toString(),
+              suggestedSpecialty: result['suggestedSpecialty']?.toString(),
               suggestedSpecialties: specs,
-              patientSafeMessage: result!['patientSafeMessage']?.toString(),
+              patientSafeMessage: result['patientSafeMessage']?.toString(),
             ),
           );
         } else {
-          final missingQuestionsList = result!['missingInfoQuestions'] ?? [];
+          final missingQuestionsList = result['missingInfoQuestions'] ?? [];
           final String title =
-              result!['patientSafeMessage'] ??
+              result['patientSafeMessage'] ??
               'Por favor, selecciona o responde lo siguiente:';
 
           final List<String> questionTexts = [];
@@ -466,7 +466,7 @@ class TriageCubit extends Cubit<TriageState> {
           emit(
             state.copyWith(
               currentStep: 2,
-              sessionId: result!['sessionId'],
+              sessionId: result['sessionId'],
               missingQuestions: missingQuestionsList,
               chatMessages: chatWithAi,
               answers: {},
@@ -603,18 +603,23 @@ class TriageCubit extends Cubit<TriageState> {
   }
 
   void loadDraft(Map<String, dynamic> draftData) {
-    final medicalHistory = draftData['medicalHistory'] as Map<String, dynamic>? ?? {};
+    final medicalHistory =
+        draftData['medicalHistory'] as Map<String, dynamic>? ?? {};
     final step = draftData['step'] as int? ?? 1;
 
     final surgeries = medicalHistory['previousSurgeries']?.toString() ?? '';
     final allergies = medicalHistory['allergies']?.toString() ?? '';
     final otherHistory = medicalHistory['other']?.toString() ?? '';
 
-    final String chronicConditionsStr = medicalHistory['chronicConditions']?.toString() ?? '';
+    final String chronicConditionsStr =
+        medicalHistory['chronicConditions']?.toString() ?? '';
     List<String> conditions = [];
     String otherChronic = '';
     if (chronicConditionsStr.isNotEmpty && chronicConditionsStr != 'Ninguna') {
-      final parts = chronicConditionsStr.split(',').map((s) => s.trim()).toList();
+      final parts = chronicConditionsStr
+          .split(',')
+          .map((s) => s.trim())
+          .toList();
       const common = ['Diabetes', 'Hipertensión', 'Asma', 'Tiroides'];
       for (var part in parts) {
         if (common.contains(part)) {
@@ -625,14 +630,16 @@ class TriageCubit extends Cubit<TriageState> {
       }
     }
 
-    emit(state.copyWith(
-      currentStep: step,
-      surgeries: surgeries,
-      allergies: allergies,
-      otherHistory: otherHistory,
-      chronicConditions: conditions,
-      otherChronicConditions: otherChronic,
-    ));
+    emit(
+      state.copyWith(
+        currentStep: step,
+        surgeries: surgeries,
+        allergies: allergies,
+        otherHistory: otherHistory,
+        chronicConditions: conditions,
+        otherChronicConditions: otherChronic,
+      ),
+    );
   }
 
   void reset() {

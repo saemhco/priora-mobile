@@ -11,6 +11,6 @@ class PatientProfileController {
   }
 
   void editProfile(BuildContext context) {
-    // Handle future edit profile page route or action
+    context.push('/edit-profile');
   }
 }
