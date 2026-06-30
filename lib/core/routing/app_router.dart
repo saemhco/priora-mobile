@@ -1,14 +1,48 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/presentation/splash_screen.dart';
 import 'package:priora/features/shared/onboarding/presentation/onboarding_screen.dart';
 import 'package:priora/features/shared/auth/presentation/login_screen.dart';
 import 'package:priora/features/shared/auth/presentation/register_screen.dart';
+import 'package:priora/features/shared/auth/presentation/forgot_password_screen.dart';
 import 'package:priora/features/shared/auth/presentation/complete_profile_screen.dart';
 import 'package:priora/features/patient/navigation/presentation/patient_navigation_screen.dart';
 import 'package:priora/features/doctor/home/presentation/doctor_home_screen.dart';
 import 'package:priora/features/patient/profile/presentation/edit_profile_screen.dart';
 import 'package:priora/features/patient/profile/presentation/map_picker_screen.dart';
 import 'package:priora/features/patient/home/presentation/notifications_screen.dart';
+
+CustomTransitionPage<T> _buildTransitionPage<T>({
+  required LocalKey key,
+  required Widget child,
+}) {
+  return CustomTransitionPage<T>(
+    key: key,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeInOut,
+        ),
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.0, 0.04), // Sutil slide up
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+            ),
+          ),
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -19,44 +53,78 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/onboarding',
-      builder: (context, state) => const OnboardingScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const OnboardingScreen(),
+      ),
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const LoginScreen(),
+      ),
     ),
     GoRoute(
       path: '/register',
-      builder: (context, state) => const RegisterScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const RegisterScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/forgot-password',
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const ForgotPasswordScreen(),
+      ),
     ),
     GoRoute(
       path: '/complete-profile',
-      builder: (context, state) => const CompleteProfileScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const CompleteProfileScreen(),
+      ),
     ),
     GoRoute(
       path: '/patient',
-      builder: (context, state) => const PatientNavigationScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const PatientNavigationScreen(),
+      ),
     ),
     GoRoute(
       path: '/doctor',
-      builder: (context, state) => const DoctorHomeScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const DoctorHomeScreen(),
+      ),
     ),
     GoRoute(
       path: '/edit-profile',
-      builder: (context, state) => const EditProfileScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const EditProfileScreen(),
+      ),
     ),
     GoRoute(
       path: '/map-picker',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final extra = state.extra as Map<String, double>?;
         final lat = extra?['latitude'] ?? -12.046374;
         final lng = extra?['longitude'] ?? -77.042793;
-        return MapPickerScreen(initialLatitude: lat, initialLongitude: lng);
+        return _buildTransitionPage(
+          key: state.pageKey,
+          child: MapPickerScreen(initialLatitude: lat, initialLongitude: lng),
+        );
       },
     ),
     GoRoute(
       path: '/notifications',
-      builder: (context, state) => const NotificationsScreen(),
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const NotificationsScreen(),
+      ),
     ),
   ],
 );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/controller/register_controller.dart';
+import 'package:priora/features/shared/auth/presentation/widgets/google_button.dart';
 
 class RegisterForm extends StatelessWidget {
   final RegisterController controller;
@@ -50,10 +51,7 @@ class RegisterForm extends StatelessWidget {
                     color: Color(0xFF64748B),
                   ),
                   hintText: 'nombre@ejemplo.com',
-                  hintStyle: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 15,
-                  ),
+                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.symmetric(
                     vertical: 16,
@@ -215,9 +213,7 @@ class RegisterForm extends StatelessWidget {
             // Divider "o regístrate con"
             const Row(
               children: [
-                Expanded(
-                  child: Divider(color: Color(0xFFE2E8F0)),
-                ),
+                Expanded(child: Divider(color: Color(0xFFE2E8F0))),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
@@ -229,62 +225,17 @@ class RegisterForm extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  child: Divider(color: Color(0xFFE2E8F0)),
-                ),
+                Expanded(child: Divider(color: Color(0xFFE2E8F0))),
               ],
             ),
             const SizedBox(height: 24),
 
             // Google Register Button
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: isLoading
-                    ? null
-                    : () => controller.handleGoogleRegister(context, isLoading),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF1E293B),
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(
-                    color: Color(0xFFE2E8F0),
-                    width: 1.5,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
-                      child: Image.network(
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png',
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.g_mobiledata_rounded,
-                          color: Colors.red,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Continuar con Google',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            GoogleButton(
+              onTap: () => isLoading
+                  ? null
+                  : () => controller.handleGoogleRegister(context, isLoading),
+              text: 'Continuar con Google',
             ),
             const SizedBox(height: 24),
 
@@ -295,10 +246,7 @@ class RegisterForm extends StatelessWidget {
                 child: RichText(
                   key: const ValueKey('goto_login_button'),
                   text: const TextSpan(
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF64748B),
-                    ),
+                    style: TextStyle(fontSize: 14, color: Color(0xFF64748B)),
                     children: [
                       TextSpan(text: '¿Ya tengo cuenta? '),
                       TextSpan(

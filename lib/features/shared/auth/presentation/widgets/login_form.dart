@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/controller/login_controller.dart';
+import 'package:priora/features/shared/auth/presentation/widgets/google_button.dart';
 
 class LoginForm extends StatelessWidget {
   final LoginController controller;
@@ -108,7 +109,9 @@ class LoginForm extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: isLoading ? null : () {},
+                    onTap: isLoading
+                        ? null
+                        : () => context.go('/forgot-password'),
                     child: const Text(
                       'Olvidé mi contraseña',
                       style: TextStyle(
@@ -207,52 +210,10 @@ class LoginForm extends StatelessWidget {
               const SizedBox(height: 24),
 
               // Google Button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: isLoading
-                      ? null
-                      : () => controller.handleGoogleLogin(context, isLoading),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF1E293B),
-                    backgroundColor: Colors.white,
-                    side: const BorderSide(
-                      color: Color(0xFFE2E8F0),
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Mock Google Logo
-                      Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(shape: BoxShape.circle),
-                        child: Image.network(
-                          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png',
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
-                                Icons.g_mobiledata_rounded,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Google',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              GoogleButton(
+                onTap: () => isLoading
+                    ? null
+                    : () => controller.handleGoogleLogin(context, isLoading),
               ),
               const SizedBox(height: 24),
 

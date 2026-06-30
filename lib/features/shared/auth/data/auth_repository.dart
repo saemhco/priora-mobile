@@ -135,4 +135,25 @@ class AuthRepository {
     }
     throw Exception('Error al obtener las citas');
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      final response = await _dio.post(
+        '/auth/forgot-password',
+        data: {'email': email},
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception('Error al enviar el correo de recuperación');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        throw Exception('El correo electrónico no está registrado');
+      }
+      final detail = e.response?.data?['message'];
+      if (detail is String) {
+        throw Exception(detail);
+      }
+      throw Exception(e.message ?? 'Error de conexión');
+    }
+  }
 }
