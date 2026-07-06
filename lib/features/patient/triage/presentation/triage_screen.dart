@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_step1_form.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_step2_chat.dart';
@@ -103,9 +104,7 @@ class _TriageScreenBodyState extends State<_TriageScreenBody> {
               ),
               child: const Text(
                 'Abandonar',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -117,7 +116,9 @@ class _TriageScreenBodyState extends State<_TriageScreenBody> {
   @override
   Widget build(BuildContext context) {
     final authState = context.read<AuthBloc>().state;
-    final accessToken = authState is AuthAuthenticated ? authState.accessToken : '';
+    final accessToken = authState is AuthAuthenticated
+        ? authState.accessToken
+        : '';
 
     return BlocConsumer<TriageCubit, TriageState>(
       bloc: _cubit,
@@ -159,15 +160,10 @@ class _TriageScreenBodyState extends State<_TriageScreenBody> {
             centerTitle: true,
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(1),
-              child: Container(
-                color: const Color(0xFFE2E8F0),
-                height: 1,
-              ),
+              child: Container(color: const Color(0xFFE2E8F0), height: 1),
             ),
           ),
-          body: SafeArea(
-            child: _buildBody(state, accessToken),
-          ),
+          body: SafeArea(child: _buildBody(state, accessToken)),
         );
       },
     );
@@ -181,7 +177,10 @@ class _TriageScreenBodyState extends State<_TriageScreenBody> {
     } else if (state.currentStep == 3) {
       return TriageStep3Analysis(state: state);
     } else {
-      return TriageResultView(state: state);
+      return TriageResultView(
+        state: state,
+        navigationCubit: context.read<PatientNavigationCubit>(),
+      );
     }
   }
 }

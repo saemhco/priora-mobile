@@ -25,6 +25,7 @@ class CompleteProfileController extends ChangeNotifier {
   double latitude = -12.046374;
   double longitude = -77.042793;
   bool fetchingLocation = false;
+  bool hasSelectedLocation = false;
 
   final List<String> docTypes = const ['DNI', 'Pasaporte', 'CEX'];
   final List<String> occupationsList = const [
@@ -32,7 +33,7 @@ class CompleteProfileController extends ChangeNotifier {
     'Empleado',
     'Independiente',
     'Desempleado',
-    'Jubilado'
+    'Jubilado',
   ];
 
   void setDocType(String? value) {
@@ -81,7 +82,8 @@ class CompleteProfileController extends ChangeNotifier {
 
       if (permission == LocationPermission.deniedForever) {
         throw Exception(
-            'Los permisos de ubicación están denegados permanentemente.');
+          'Los permisos de ubicación están denegados permanentemente.',
+        );
       }
 
       Position position = await Geolocator.getCurrentPosition(
@@ -90,6 +92,7 @@ class CompleteProfileController extends ChangeNotifier {
 
       latitude = position.latitude;
       longitude = position.longitude;
+      hasSelectedLocation = true;
       addressController.text =
           'Lat: ${position.latitude.toStringAsFixed(6)}, Lng: ${position.longitude.toStringAsFixed(6)}';
       notifyListeners();
@@ -119,6 +122,15 @@ class CompleteProfileController extends ChangeNotifier {
     }
   }
 
+  void setCoordinates(double lat, double lng) {
+    latitude = lat;
+    longitude = lng;
+    hasSelectedLocation = true;
+    addressController.text =
+        'Lat: ${lat.toStringAsFixed(6)}, Lng: ${lng.toStringAsFixed(6)}';
+    notifyListeners();
+  }
+
   Future<void> selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -145,7 +157,11 @@ class CompleteProfileController extends ChangeNotifier {
     }
   }
 
-  void saveProfile(BuildContext context, GlobalKey<FormState> formKey, bool isLoading) {
+  void saveProfile(
+    BuildContext context,
+    GlobalKey<FormState> formKey,
+    bool isLoading,
+  ) {
     if (isLoading) return;
 
     if (formKey.currentState!.validate()) {
@@ -203,16 +219,26 @@ class CompleteProfileController extends ChangeNotifier {
         genderIdentityEnum = "OTHER";
       }
 
+      // Convert Document Type to backend enum values
+      String docTypeEnum = "DNI";
+      if (docType == 'Pasaporte') {
+        docTypeEnum = "PASAPORTE";
+      } else if (docType == 'CEX') {
+        docTypeEnum = "CARNET_EXTRANJERIA";
+      }
+
       final body = {
         "firstName": nombreController.text.trim(),
         "lastName": apellidoController.text.trim(),
-        "documentType": docType,
+        "documentType": docTypeEnum,
         "documentId": docNumController.text.trim(),
         "phone": phoneNumber.phoneNumber ?? "",
         "dateOfBirth": dateOfBirth,
         "biologicalSex": biologicalSex == 'Femenino' ? 'FEMALE' : 'MALE',
         "genderIdentity": genderIdentityEnum,
-        "genderIdentityOther": genderIdentity == 'Otro' ? 'Género fluido' : null,
+        "genderIdentityOther": genderIdentity == 'Otro'
+            ? 'Género fluido'
+            : null,
         "occupation": occupation ?? "Empleado",
         "profilePhotoUrl": "",
         "latitude": latitude,
@@ -221,12 +247,12 @@ class CompleteProfileController extends ChangeNotifier {
       };
 
       context.read<AuthBloc>().add(
-            AuthUpdateProfileRequested(
-              profileData: body,
-              accessToken: authState.accessToken,
-              role: authState.role,
-            ),
-          );
+        AuthUpdateProfileRequested(
+          profileData: body,
+          accessToken: authState.accessToken,
+          role: authState.role,
+        ),
+      );
     }
   }
 

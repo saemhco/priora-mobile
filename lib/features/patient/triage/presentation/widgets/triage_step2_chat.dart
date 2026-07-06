@@ -922,7 +922,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
-              height: 44,
+              height: 48,
               child: ElevatedButton(
                 onPressed: (!allAnswered || widget.state.isAnalyzing)
                     ? null
@@ -930,28 +930,40 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0256C2),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xFFE2E8F0),
-                  disabledForegroundColor: const Color(0xFF94A3B8),
+                  disabledBackgroundColor: const Color(0xFFEFF6FF), // soft light blue when disabled
+                  disabledForegroundColor: const Color(0xFFBFDBFE), // soft disabled blue text
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   elevation: 0,
+                  shadowColor: Colors.transparent,
                 ),
                 child: widget.state.isAnalyzing
                     ? const SizedBox(
                         height: 20,
                         width: 20,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
+                          color: Color(0xFF0256C2),
+                          strokeWidth: 2.5,
                         ),
                       )
-                    : const Text(
-                        'Enviar respuestas',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const [
+                          Icon(
+                            Icons.check_circle_outline_rounded,
+                            size: 18,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Enviar respuestas',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
                       ),
               ),
             ),

@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_result_view.dart';
+import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 
 class TriageResultScreen extends StatelessWidget {
   final TriageState state;
+  final PatientNavigationCubit navigationCubit;
 
-  const TriageResultScreen({super.key, required this.state});
+  const TriageResultScreen({
+    super.key,
+    required this.state,
+    required this.navigationCubit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +41,7 @@ class TriageResultScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: TriageResultView(state: state),
+      body: TriageResultView(state: state, navigationCubit: navigationCubit),
     );
   }
 }

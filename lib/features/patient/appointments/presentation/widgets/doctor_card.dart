@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:priora/features/patient/appointments/controller/appointments_controller.dart';
 
-class DoctorCard extends StatelessWidget {
+class DoctorCard extends StatefulWidget {
   final DoctorModel doctor;
   final Function(String) onSelectSlot;
   final VoidCallback onViewCalendar;
@@ -14,16 +14,70 @@ class DoctorCard extends StatelessWidget {
   });
 
   @override
+  State<DoctorCard> createState() => _DoctorCardState();
+}
+
+class _DoctorCardState extends State<DoctorCard> {
+  bool _isExpanded = false;
+
+  Map<String, List<String>> _groupSlotsByDate(List<String> originalSlots) {
+    final Map<String, List<String>> grouped = {};
+    final now = DateTime.now();
+
+    for (var s in originalSlots) {
+      try {
+        final dt = DateTime.parse(s).toLocal();
+        // Format date label
+        String dateLabel = '';
+        if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
+          dateLabel = 'Hoy, ${_formatDayMonth(dt)}';
+        } else if (dt.day == now.day + 1 &&
+            dt.month == now.month &&
+            dt.year == now.year) {
+          dateLabel = 'Mañana, ${_formatDayMonth(dt)}';
+        } else {
+          dateLabel = _formatDayMonth(dt);
+        }
+
+        final hour = dt.hour.toString().padLeft(2, '0');
+        final min = dt.minute.toString().padLeft(2, '0');
+        final formattedHour = '$hour:$min';
+
+        grouped.putIfAbsent(dateLabel, () => []).add(formattedHour);
+      } catch (_) {}
+    }
+    return grouped;
+  }
+
+  String _formatDayMonth(DateTime dt) {
+    final months = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
+    return '${dt.day} ${months[dt.month - 1]}';
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final groupedSlots = _groupSlotsByDate(widget.doctor.originalSlots);
+    final hasMoreDates = groupedSlots.keys.length > 1;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFF1F5F9),
-          width: 1.5,
-        ),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFF0F172A).withOpacity(0.02),
@@ -45,7 +99,7 @@ class DoctorCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.network(
-                    doctor.avatarUrl,
+                    widget.doctor.avatarUrl,
                     width: 72,
                     height: 72,
                     fit: BoxFit.cover,
@@ -74,7 +128,7 @@ class DoctorCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              doctor.name,
+                              widget.doctor.name,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -93,7 +147,7 @@ class DoctorCard extends StatelessWidget {
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                doctor.rating.toString(),
+                                widget.doctor.rating.toString(),
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
@@ -106,25 +160,27 @@ class DoctorCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        doctor.specialty,
+                        widget.doctor.specialty,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF0F766E), // Teal special color
+                          color: Color(0xFF0F766E),
                         ),
                       ),
                       const SizedBox(height: 6),
                       Row(
                         children: [
                           Icon(
-                            doctor.isVirtual ? Icons.videocam_outlined : Icons.location_on_outlined,
+                            widget.doctor.isVirtual
+                                ? Icons.videocam_outlined
+                                : Icons.location_on_outlined,
                             color: const Color(0xFF64748B),
                             size: 16,
                           ),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              doctor.location,
+                              widget.doctor.location,
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Color(0xFF64748B),
@@ -149,7 +205,7 @@ class DoctorCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  doctor.nextDateLabel,
+                  widget.doctor.nextDateLabel,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -157,37 +213,60 @@ class DoctorCard extends StatelessWidget {
                     letterSpacing: 0.5,
                   ),
                 ),
-                GestureDetector(
-                  onTap: onViewCalendar,
-                  child: const Text(
-                    'Ver calendario',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0E5FD9),
+                if (hasMoreDates)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isExpanded = !_isExpanded;
+                      });
+                      widget.onViewCalendar();
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _isExpanded ? 'Ver menos' : 'Ver calendario',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0E5FD9),
+                          ),
+                        ),
+                        const SizedBox(width: 2),
+                        Icon(
+                          _isExpanded
+                              ? Icons.keyboard_arrow_up_rounded
+                              : Icons.keyboard_arrow_down_rounded,
+                          size: 16,
+                          color: const Color(0xFF0E5FD9),
+                        ),
+                      ],
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 10),
             // Time Slots Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: doctor.timeSlots.map((slot) {
-                final isSelected = slot == doctor.selectedTimeSlot;
+              children: widget.doctor.timeSlots.map((slot) {
+                final isSelected = slot == widget.doctor.selectedTimeSlot;
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
                     child: GestureDetector(
-                      onTap: () => onSelectSlot(slot),
+                      onTap: () => widget.onSelectSlot(slot),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFF67E8F9) : Colors.transparent,
+                          color: isSelected
+                              ? const Color(0xFF67E8F9)
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0),
+                            color: isSelected
+                                ? Colors.transparent
+                                : const Color(0xFFE2E8F0),
                             width: 1.2,
                           ),
                         ),
@@ -197,7 +276,9 @@ class DoctorCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF334155),
+                              color: isSelected
+                                  ? const Color(0xFF0F172A)
+                                  : const Color(0xFF334155),
                             ),
                           ),
                         ),
@@ -207,6 +288,74 @@ class DoctorCard extends StatelessWidget {
                 );
               }).toList(),
             ),
+            // Expanded section for other dates
+            if (_isExpanded && hasMoreDates) ...[
+              const SizedBox(height: 12),
+              const Divider(color: Color(0xFFF1F5F9), height: 1),
+              const SizedBox(height: 12),
+              ...groupedSlots.entries.skip(1).map((entry) {
+                final dateLabel = entry.key;
+                final slotsForDate = entry.value;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dateLabel,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF64748B),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: slotsForDate.map((slot) {
+                          final isSelected =
+                              slot == widget.doctor.selectedTimeSlot;
+                          return GestureDetector(
+                            onTap: () => widget.onSelectSlot(slot),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF67E8F9)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.transparent
+                                      : const Color(0xFFE2E8F0),
+                                  width: 1.2,
+                                ),
+                              ),
+                              child: Text(
+                                slot,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? const Color(0xFF0F172A)
+                                      : const Color(0xFF334155),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
           ],
         ),
       ),

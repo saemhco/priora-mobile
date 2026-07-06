@@ -19,9 +19,17 @@ class AuthInterceptor extends Interceptor {
   ) async {
     if (err.response?.statusCode == 401) {
       final requestPath = err.requestOptions.path;
-      // Do not try to refresh if the request itself was login or refresh
-      if (requestPath.contains('/auth/refresh') ||
+      
+      // If this was already a retry and still failed with 401, or if it is an auth call, logout immediately
+      if (err.requestOptions.extra['isRetry'] == true ||
+          requestPath.contains('/auth/refresh') ||
           requestPath.contains('/auth/login')) {
+        if (err.requestOptions.extra['isRetry'] == true) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('accessToken');
+          await prefs.remove('refreshToken');
+          onLogout?.call();
+        }
         return super.onError(err, handler);
       }
 
@@ -58,6 +66,7 @@ class AuthInterceptor extends Interceptor {
           // Retry the original request with the new access token
           final requestOptions = err.requestOptions;
           requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+          requestOptions.extra['isRetry'] = true; // Mark as retry
 
           // Use the global dio instance to fetch again
           final retryResponse = await dio.fetch(requestOptions);

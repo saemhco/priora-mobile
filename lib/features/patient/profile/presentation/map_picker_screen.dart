@@ -166,120 +166,56 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: Stack(
-        children: [
-          MapWidget(
-            key: const ValueKey("mapPicker"),
-            cameraOptions: CameraOptions(
-              center: Point(
-                coordinates: Position(_selectedLongitude, _selectedLatitude),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            MapWidget(
+              key: const ValueKey("mapPicker"),
+              cameraOptions: CameraOptions(
+                center: Point(
+                  coordinates: Position(_selectedLongitude, _selectedLatitude),
+                ),
+                zoom: 15.0,
               ),
-              zoom: 15.0,
-            ),
-            onMapCreated: (MapboxMap mapboxMap) {
-              _mapboxMap = mapboxMap;
-            },
-            onCameraChangeListener: (event) {
-              _mapboxMap?.getCameraState().then((state) {
-                final center = state.center;
-                final pos = center.coordinates;
-                setState(() {
-                  _selectedLatitude = pos.lat.toDouble();
-                  _selectedLongitude = pos.lng.toDouble();
+              onMapCreated: (MapboxMap mapboxMap) {
+                _mapboxMap = mapboxMap;
+              },
+              onCameraChangeListener: (event) {
+                _mapboxMap?.getCameraState().then((state) {
+                  final center = state.center;
+                  final pos = center.coordinates;
+                  setState(() {
+                    _selectedLatitude = pos.lat.toDouble();
+                    _selectedLongitude = pos.lng.toDouble();
+                  });
                 });
-              });
-            },
-          ),
+              },
+            ),
 
-          // Static Center Pin Marker (Uber style)
-          const IgnorePointer(
-            child: Center(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  bottom: 36,
-                ), // Align bottom tip of the pin with dead center of map
-                child: Icon(
-                  Icons.location_pin,
-                  color: Color(0xFF0256C2),
-                  size: 48,
+            // Static Center Pin Marker (Uber style)
+            const IgnorePointer(
+              child: Center(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: 36,
+                  ), // Align bottom tip of the pin with dead center of map
+                  child: Icon(
+                    Icons.location_pin,
+                    color: Color(0xFF0256C2),
+                    size: 48,
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Search Bar Overlay
-          Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: Column(
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _searchPlaces,
-                    decoration: InputDecoration(
-                      hintText: 'Buscar lugar o dirección...',
-                      hintStyle: const TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 14,
-                      ),
-                      prefixIcon: const Icon(
-                        Icons.search,
-                        color: Color(0xFF64748B),
-                      ),
-                      suffixIcon: _searchController.text.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(
-                                Icons.clear,
-                                color: Color(0xFF64748B),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _searchController.clear();
-                                  _searchResults = [];
-                                });
-                              },
-                            )
-                          : _searching
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: Padding(
-                                padding: EdgeInsets.all(12.0),
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Color(0xFF0256C2),
-                                ),
-                              ),
-                            )
-                          : null,
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                    ),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF1E293B),
-                    ),
-                  ),
-                ),
-                if (_searchResults.isNotEmpty)
+            // Search Bar Overlay
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Column(
+                children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
@@ -291,107 +227,173 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         ),
                       ],
                     ),
-                    child: ListView.separated(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.zero,
-                      itemCount: _searchResults.length,
-                      separatorBuilder: (context, index) =>
-                          const Divider(color: Color(0xFFF1F5F9), height: 1),
-                      itemBuilder: (context, index) {
-                        final place = _searchResults[index];
-                        final name = place['place_name']?.toString() ?? '';
-                        final coords = place['center'] as List<dynamic>?;
-
-                        return ListTile(
-                          leading: const Icon(
-                            Icons.location_on_outlined,
-                            color: Color(0xFF0256C2),
-                          ),
-                          title: Text(
-                            name,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF334155),
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          onTap: () {
-                            if (coords != null && coords.length >= 2) {
-                              final lng = coords[0] as double;
-                              final lat = coords[1] as double;
-                              _goToLocation(lat, lng);
-                            }
-                          },
-                        );
-                      },
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: _searchPlaces,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar lugar o dirección...',
+                        hintStyle: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 14,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Color(0xFF64748B),
+                        ),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(
+                                  Icons.clear,
+                                  color: Color(0xFF64748B),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _searchController.clear();
+                                    _searchResults = [];
+                                  });
+                                },
+                              )
+                            : _searching
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF0256C2),
+                                  ),
+                                ),
+                              )
+                            : null,
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
+                      ),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                   ),
-              ],
-            ),
-          ),
-
-          // My Location Button
-          Positioned(
-            bottom: 90,
-            right: 20,
-            child: FloatingActionButton(
-              heroTag: 'myLocationBtn',
-              onPressed: _gettingMyLocation ? null : _getCurrentLocation,
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF0256C2),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: _gettingMyLocation
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Color(0xFF0256C2),
+                  if (_searchResults.isNotEmpty)
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                    )
-                  : const Icon(Icons.my_location_rounded, size: 24),
-            ),
-          ),
+                      child: ListView.separated(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.zero,
+                        itemCount: _searchResults.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(color: Color(0xFFF1F5F9), height: 1),
+                        itemBuilder: (context, index) {
+                          final place = _searchResults[index];
+                          final name = place['place_name']?.toString() ?? '';
+                          final coords = place['center'] as List<dynamic>?;
 
-          // Confirm Button
-          Positioned(
-            bottom: 24,
-            left: 20,
-            right: 20,
-            child: SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pop({
-                    'latitude': _selectedLatitude,
-                    'longitude': _selectedLongitude,
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0256C2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 2,
+                          return ListTile(
+                            leading: const Icon(
+                              Icons.location_on_outlined,
+                              color: Color(0xFF0256C2),
+                            ),
+                            title: Text(
+                              name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Color(0xFF334155),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () {
+                              if (coords != null && coords.length >= 2) {
+                                final lng = coords[0] as double;
+                                final lat = coords[1] as double;
+                                _goToLocation(lat, lng);
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // My Location Button
+            Positioned(
+              bottom: 90,
+              right: 20,
+              child: FloatingActionButton(
+                heroTag: 'myLocationBtn',
+                onPressed: _gettingMyLocation ? null : _getCurrentLocation,
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF0256C2),
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Text(
-                  'Confirmar Ubicación',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                child: _gettingMyLocation
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF0256C2),
+                        ),
+                      )
+                    : const Icon(Icons.my_location_rounded, size: 24),
+              ),
+            ),
+
+            // Confirm Button
+            Positioned(
+              bottom: 24,
+              left: 20,
+              right: 20,
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop({
+                      'latitude': _selectedLatitude,
+                      'longitude': _selectedLongitude,
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0256C2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    elevation: 2,
+                  ),
+                  child: const Text(
+                    'Confirmar Ubicación',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

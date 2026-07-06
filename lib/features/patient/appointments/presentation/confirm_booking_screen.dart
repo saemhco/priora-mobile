@@ -659,7 +659,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    widget.controller.changeSubTab(1);
+                    try {
+                      widget.controller.changeSubTab(1);
+                    } catch (_) {}
                     widget.navigationCubit.changeIndex(2);
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
@@ -683,7 +685,9 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 height: 52,
                 child: OutlinedButton(
                   onPressed: () {
-                    widget.controller.changeSubTab(0);
+                    try {
+                      widget.controller.changeSubTab(0);
+                    } catch (_) {}
                     widget.navigationCubit.changeIndex(0);
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },

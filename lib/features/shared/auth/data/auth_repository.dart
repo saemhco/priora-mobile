@@ -32,7 +32,7 @@ class AuthRepository {
     try {
       final response = await _dio.post(
         '/auth/register',
-        data: {'email': email, 'password': password, 'role': 'patient'},
+        data: {'email': email, 'password': password},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
