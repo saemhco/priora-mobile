@@ -4,8 +4,8 @@ import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 import 'package:priora/features/shared/auth/data/auth_event.dart';
 
 class LoginController extends ChangeNotifier {
-  final emailController = TextEditingController(text: "edyneoxzpp@gmail.com");
-  final passwordController = TextEditingController(text: "mispadres12");
+  final emailController = TextEditingController(text: "profesional2@vitalink.com");
+  final passwordController = TextEditingController(text: "password");
   bool obscurePassword = true;
 
   void togglePasswordVisibility() {

@@ -96,6 +96,10 @@ class AuthRepository {
       if (e.response?.statusCode == 401) {
         throw Exception('Sesión expirada o no autorizada');
       }
+      final detail = e.response?.data?['message'];
+      if (detail is String) {
+        throw Exception(detail);
+      }
       throw Exception(e.message ?? 'Error de conexión');
     }
   }

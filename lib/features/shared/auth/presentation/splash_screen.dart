@@ -91,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen>
       if (state is AuthAuthenticated) {
         if (!state.profileComplete) {
           context.go('/complete-profile');
-        } else if (state.role == 'doctor') {
+        } else if (state.role == 'professional') {
           context.go('/doctor');
         } else {
           context.go('/patient');

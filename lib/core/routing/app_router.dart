@@ -7,10 +7,12 @@ import 'package:priora/features/shared/auth/presentation/register_screen.dart';
 import 'package:priora/features/shared/auth/presentation/forgot_password_screen.dart';
 import 'package:priora/features/shared/auth/presentation/complete_profile_screen.dart';
 import 'package:priora/features/patient/navigation/presentation/patient_navigation_screen.dart';
-import 'package:priora/features/doctor/home/presentation/doctor_home_screen.dart';
+import 'package:priora/features/doctor/navigation/presentation/doctor_navigation_screen.dart';
 import 'package:priora/features/patient/profile/presentation/edit_profile_screen.dart';
 import 'package:priora/features/patient/profile/presentation/map_picker_screen.dart';
 import 'package:priora/features/patient/home/presentation/notifications_screen.dart';
+import 'package:priora/features/doctor/agenda/presentation/create_block_screen.dart';
+import 'package:priora/features/doctor/places/presentation/create_place_screen.dart';
 
 CustomTransitionPage<T> _buildTransitionPage<T>({
   required LocalKey key,
@@ -97,7 +99,7 @@ final GoRouter appRouter = GoRouter(
       path: '/doctor',
       pageBuilder: (context, state) => _buildTransitionPage(
         key: state.pageKey,
-        child: const DoctorHomeScreen(),
+        child: const DoctorNavigationScreen(),
       ),
     ),
     GoRoute(
@@ -124,6 +126,23 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => _buildTransitionPage(
         key: state.pageKey,
         child: const NotificationsScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/create-place',
+      pageBuilder: (context, state) {
+        final place = state.extra as dynamic;
+        return _buildTransitionPage(
+          key: state.pageKey,
+          child: CreatePlaceScreen(place: place),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/create-block',
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: const CreateBlockScreen(),
       ),
     ),
   ],

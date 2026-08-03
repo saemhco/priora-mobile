@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
@@ -17,6 +18,7 @@ import 'package:priora/core/di/injection.dart';
 import 'package:priora/features/patient/profile/data/profile_repository.dart';
 import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit/profile_cubit.dart';
 import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/doctor/places/data/places_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +57,9 @@ Future<void> main() async {
         RepositoryProvider<ProfileRepository>.value(
           value: getIt<ProfileRepository>(),
         ),
+        RepositoryProvider<PlacesRepository>.value(
+          value: getIt<PlacesRepository>(),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -85,6 +90,15 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       routerConfig: appRouter,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('es', 'ES'),
+      ],
     );
   }
 }

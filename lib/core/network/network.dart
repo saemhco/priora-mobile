@@ -8,80 +8,203 @@ typedef TokenRefreshCallback =
     void Function(String accessToken, String refreshToken);
 typedef LogoutCallback = void Function();
 
+class _PendingRequest {
+  final RequestOptions requestOptions;
+  final ErrorInterceptorHandler handler;
+
+  _PendingRequest({
+    required this.requestOptions,
+    required this.handler,
+  });
+}
+
 class AuthInterceptor extends Interceptor {
   static TokenRefreshCallback? onTokenRefreshed;
   static LogoutCallback? onLogout;
+
+  static bool _isRefreshing = false;
+  static final List<_PendingRequest> _pendingRequests = [];
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    handler.next(options);
+  }
+
+  @override
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
+    handler.next(response);
+  }
 
   @override
   Future<void> onError(
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    if (err.response?.statusCode == 401) {
-      final requestPath = err.requestOptions.path;
-      
-      // If this was already a retry and still failed with 401, or if it is an auth call, logout immediately
-      if (err.requestOptions.extra['isRetry'] == true ||
-          requestPath.contains('/auth/refresh') ||
-          requestPath.contains('/auth/login')) {
-        if (err.requestOptions.extra['isRetry'] == true) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('accessToken');
-          await prefs.remove('refreshToken');
-          onLogout?.call();
+    // Only handle 401 errors
+    if (err.response?.statusCode != 401) {
+      return super.onError(err, handler);
+    }
+
+    final requestPath = err.requestOptions.path;
+
+    // If this is already a retry or an auth endpoint → don't retry, logout
+    if (err.requestOptions.extra['isRetry'] == true ||
+        requestPath.contains('/auth/refresh') ||
+        requestPath.contains('/auth/login')) {
+      if (err.requestOptions.extra['isRetry'] == true) {
+        await _clearTokensAndLogout();
+      }
+      return super.onError(err, handler);
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final refreshToken = prefs.getString('refreshToken');
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      await _clearTokensAndLogout();
+      return super.onError(err, handler);
+    }
+
+    // If we're already refreshing the token, queue this request
+    if (_isRefreshing) {
+      _pendingRequests.add(_PendingRequest(
+        requestOptions: err.requestOptions,
+        handler: handler,
+      ));
+      return;
+    }
+
+    // Start refreshing the token
+    _isRefreshing = true;
+
+    try {
+      final refreshSuccess = await _performTokenRefresh(refreshToken);
+
+      if (refreshSuccess) {
+        // Get the new access token from SharedPreferences
+        final newAccessToken = prefs.getString('accessToken') ?? '';
+
+        // Retry the original request that triggered the refresh
+        err.requestOptions.headers['Authorization'] =
+            'Bearer $newAccessToken';
+        err.requestOptions.extra['isRetry'] = true;
+
+        try {
+          final retryResponse = await dio.fetch(err.requestOptions);
+          handler.resolve(retryResponse);
+        } catch (retryError) {
+          // If the retry also fails, logout
+          await _clearTokensAndLogout();
+          _rejectPendingRequests(err);
+          return;
         }
-        return super.onError(err, handler);
+
+        // Success: retry all queued pending requests
+        await _retryPendingRequests();
+      } else {
+        // Token refresh failed → logout and reject all pending
+        await _clearTokensAndLogout();
+        _rejectPendingRequests(err);
       }
+    } catch (e) {
+      debugPrint('Token refresh error: $e');
+      await _clearTokensAndLogout();
+      _rejectPendingRequests(err);
+    } finally {
+      _isRefreshing = false;
+    }
+  }
 
-      final prefs = await SharedPreferences.getInstance();
-      final refreshToken = prefs.getString('refreshToken');
+  Future<void> _retryPendingRequests() async {
+    if (_pendingRequests.isEmpty) return;
 
-      if (refreshToken == null || refreshToken.isEmpty) {
-        onLogout?.call();
-        return super.onError(err, handler);
-      }
+    final prefs = await SharedPreferences.getInstance();
+    final newToken = prefs.getString('accessToken') ?? '';
+    final pendingList = List<_PendingRequest>.from(_pendingRequests);
+    _pendingRequests.clear();
 
+    for (final pending in pendingList) {
+      pending.requestOptions.headers['Authorization'] =
+          'Bearer $newToken';
+      pending.requestOptions.extra['isRetry'] = true;
       try {
-        // Create an isolated Dio instance to perform the refresh call
-        final refreshDio = Dio(
-          BaseOptions(
-            baseUrl: dotenv.env['API_URL'] ?? 'https://api-priora.quipu.club',
+        final response = await dio.fetch(pending.requestOptions);
+        pending.handler.resolve(response);
+      } catch (e) {
+        pending.handler.next(
+          DioException(
+            requestOptions: pending.requestOptions,
+            error: e,
+            message: 'Error after token refresh',
           ),
         );
-
-        final response = await refreshDio.post(
-          '/auth/refresh',
-          options: Options(headers: {'Authorization': 'Bearer $refreshToken'}),
-        );
-
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          final newAccessToken = response.data['accessToken'] as String;
-          final newRefreshToken = response.data['refreshToken'] as String;
-
-          await prefs.setString('accessToken', newAccessToken);
-          await prefs.setString('refreshToken', newRefreshToken);
-
-          onTokenRefreshed?.call(newAccessToken, newRefreshToken);
-
-          // Retry the original request with the new access token
-          final requestOptions = err.requestOptions;
-          requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-          requestOptions.extra['isRetry'] = true; // Mark as retry
-
-          // Use the global dio instance to fetch again
-          final retryResponse = await dio.fetch(requestOptions);
-          return handler.resolve(retryResponse);
-        }
-      } catch (refreshErr) {
-        print('Token refresh failed: $refreshErr');
-        // Clear tokens from SharedPreferences to make sure we don't try again
-        await prefs.remove('accessToken');
-        await prefs.remove('refreshToken');
-        onLogout?.call();
-        return super.onError(err, handler);
       }
     }
-    return super.onError(err, handler);
+  }
+
+  void _rejectPendingRequests(DioException originalError) {
+    if (_pendingRequests.isEmpty) return;
+    final pendingList = List<_PendingRequest>.from(_pendingRequests);
+    _pendingRequests.clear();
+    for (final pending in pendingList) {
+      pending.handler.next(originalError);
+    }
+  }
+
+  Future<bool> _performTokenRefresh(String refreshToken) async {
+    try {
+      // Create an isolated Dio instance without interceptors
+      final refreshDio = Dio(
+        BaseOptions(
+          baseUrl: dotenv.env['API_URL'] ?? 'https://api-priora.quipu.club',
+        ),
+      );
+
+      final response = await refreshDio.post(
+        '/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+        final newAccessToken = data['accessToken'] as String?;
+        final newRefreshToken = data['refreshToken'] as String?;
+
+        if (newAccessToken == null || newAccessToken.isEmpty) {
+          return false;
+        }
+
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('accessToken', newAccessToken);
+        if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+          await prefs.setString('refreshToken', newRefreshToken);
+        }
+
+        onTokenRefreshed?.call(
+          newAccessToken,
+          newRefreshToken ?? refreshToken,
+        );
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Token refresh request failed: $e');
+      return false;
+    }
+  }
+
+  Future<void> _clearTokensAndLogout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('accessToken');
+      await prefs.remove('refreshToken');
+    } catch (e) {
+      debugPrint('Error clearing tokens: $e');
+    }
+    onLogout?.call();
   }
 }
 
