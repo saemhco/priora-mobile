@@ -67,6 +67,106 @@ class _DoctorCardState extends State<DoctorCard> {
     return '${dt.day} ${months[dt.month - 1]}';
   }
 
+  /// Chip de hora que muestra también el tipo de cita (Virtual / Presencial).
+  Widget _buildSlotChip({
+    required String slot,
+    required bool isSelected,
+    required String? meetingType,
+    required VoidCallback onTap,
+    bool compact = false,
+  }) {
+    final isVirtual = meetingType == 'VIRTUAL';
+    final hasType = meetingType != null;
+    final typeColor = isVirtual
+        ? const Color(0xFF0256C2)
+        : const Color(0xFF059669);
+    final typeIcon = isVirtual
+        ? Icons.videocam_rounded
+        : Icons.business_rounded;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: compact
+            ? const EdgeInsets.symmetric(vertical: 8, horizontal: 4)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF67E8F9) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0),
+            width: 1.2,
+          ),
+        ),
+        child: compact
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    slot,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFF334155),
+                    ),
+                  ),
+                  if (hasType) ...[
+                    const SizedBox(height: 3),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(typeIcon, size: 9, color: typeColor),
+                          const SizedBox(width: 2),
+                          Text(
+                            isVirtual ? 'Virtual' : 'Presencial',
+                            style: TextStyle(
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w600,
+                              color: typeColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    slot,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFF334155),
+                    ),
+                  ),
+                  if (hasType) ...[
+                    const SizedBox(width: 6),
+                    Icon(typeIcon, size: 12, color: typeColor),
+                    const SizedBox(width: 3),
+                    Text(
+                      isVirtual ? 'Virtual' : 'Presencial',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: typeColor,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedSlots = _groupSlotsByDate(widget.doctor.originalSlots);
@@ -251,38 +351,16 @@ class _DoctorCardState extends State<DoctorCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: widget.doctor.timeSlots.map((slot) {
                 final isSelected = slot == widget.doctor.selectedTimeSlot;
+                final meetingType = widget.doctor.meetingTypeForSlot(slot);
                 return Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: GestureDetector(
+                    child: _buildSlotChip(
+                      slot: slot,
+                      isSelected: isSelected,
+                      meetingType: meetingType,
+                      compact: true,
                       onTap: () => widget.onSelectSlot(slot),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? const Color(0xFF67E8F9)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.transparent
-                                : const Color(0xFFE2E8F0),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            slot,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? const Color(0xFF0F172A)
-                                  : const Color(0xFF334155),
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 );
@@ -318,36 +396,13 @@ class _DoctorCardState extends State<DoctorCard> {
                         children: slotsForDate.map((slot) {
                           final isSelected =
                               slot == widget.doctor.selectedTimeSlot;
-                          return GestureDetector(
+                          final meetingType =
+                              widget.doctor.meetingTypeForSlot(slot);
+                          return _buildSlotChip(
+                            slot: slot,
+                            isSelected: isSelected,
+                            meetingType: meetingType,
                             onTap: () => widget.onSelectSlot(slot),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? const Color(0xFF67E8F9)
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? Colors.transparent
-                                      : const Color(0xFFE2E8F0),
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: Text(
-                                slot,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected
-                                      ? const Color(0xFF0F172A)
-                                      : const Color(0xFF334155),
-                                ),
-                              ),
-                            ),
                           );
                         }).toList(),
                       ),

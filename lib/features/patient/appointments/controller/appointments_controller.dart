@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:priora/features/patient/appointments/data/models/doctor_model.dart';
 import 'package:priora/features/patient/appointments/data/appointments_repository.dart';
+import 'package:priora/features/patient/appointments/data/appointments_service.dart';
 import 'package:priora/features/patient/triage/data/triage_repository.dart';
 
 export 'package:priora/features/patient/appointments/data/models/doctor_model.dart';
+export 'package:priora/features/patient/appointments/data/appointments_service.dart';
 
 class AppointmentsController extends ChangeNotifier {
   final AppointmentsRepository _repository;
@@ -19,6 +21,31 @@ class AppointmentsController extends ChangeNotifier {
   List<Map<String, dynamic>> myAppointments = [];
   bool isLoadingMyAppointments = false;
   int selectedSubTab = 0;
+
+  /// Si es false, solo se muestran citas vigentes (que aún no han pasado).
+  bool showPastAppointments = false;
+
+  void toggleShowPastAppointments() {
+    showPastAppointments = !showPastAppointments;
+    notifyListeners();
+  }
+
+  /// Citas del paciente filtradas según el toggle de pasadas.
+  List<Map<String, dynamic>> get filteredMyAppointments {
+    if (showPastAppointments) return myAppointments;
+
+    final now = DateTime.now();
+    return myAppointments.where((appointment) {
+      final raw = appointment['datetime']?.toString() ?? '';
+      if (raw.isEmpty) return true;
+      try {
+        final dt = DateTime.parse(raw).toLocal();
+        return !dt.isBefore(now);
+      } catch (_) {
+        return true;
+      }
+    }).toList();
+  }
 
   void changeSubTab(int index) {
     selectedSubTab = index;
@@ -141,31 +168,86 @@ class AppointmentsController extends ChangeNotifier {
     }
   }
 
-  Future<bool> bookAppointment(String doctorId, String timeSlot) async {
+  Future<BookingResult> bookAppointment({
+    required String doctorId,
+    required String timeSlot,
+    String? meetingType,
+    bool acknowledgeDuplicateSpecialty = false,
+  }) async {
     final doctor = _allDoctors.firstWhere((doc) => doc.id == doctorId);
-    final selectedIso = doctor.originalSlots.firstWhere(
-      (s) => s.contains(timeSlot),
-      orElse: () => '',
-    );
+    final selectedIso = doctor.originalSlotForHour(timeSlot);
 
-    if (selectedIso.isEmpty) return false;
+    if (selectedIso.isEmpty) {
+      return const BookingResult(
+        success: false,
+        message: 'No se pudo determinar la fecha de la cita.',
+      );
+    }
+
+    // Tipo de cita: se respeta el del selector, o se deriva del slot
+    final effectiveMeetingType =
+        meetingType ??
+        doctor.meetingTypeForSlot(timeSlot) ??
+        'VIRTUAL';
+
+    // Lugar del slot presencial (si aplica)
+    String? placeId;
+    final matchingRawSlot = doctor.rawSlots.firstWhere((s) {
+      final datetimeStr = s['datetime']?.toString() ?? '';
+      if (datetimeStr.isEmpty) return false;
+      try {
+        final dt = DateTime.parse(datetimeStr).toLocal();
+        final h = dt.hour.toString().padLeft(2, '0');
+        final m = dt.minute.toString().padLeft(2, '0');
+        return '$h:$m' == timeSlot;
+      } catch (_) {
+        return false;
+      }
+    }, orElse: () => <String, dynamic>{});
+    if (matchingRawSlot.isNotEmpty) {
+      final place = matchingRawSlot['place'];
+      if (place is Map) {
+        placeId = place['id']?.toString();
+      }
+    }
+
+    // Triaje COMPLETED más reciente como triageSessionId
+    String? triageSessionId;
+    try {
+      final history = await _triageRepository.getTriageHistory(
+        accessToken: accessToken,
+      );
+      if (history.isNotEmpty && history.first.id.isNotEmpty) {
+        triageSessionId = history.first.id;
+      }
+    } catch (e) {
+      debugPrint('Error fetching triage history for booking: $e');
+    }
 
     try {
-      final success = await _repository.bookAppointment(
+      final result = await _repository.bookAppointment(
         accessToken: accessToken,
         doctorId: doctorId,
         datetime: selectedIso,
+        meetingType: effectiveMeetingType,
+        placeId: placeId,
+        triageSessionId: triageSessionId,
+        specialty: doctor.specialty,
+        acknowledgeDuplicateSpecialty: acknowledgeDuplicateSpecialty,
       );
 
-      if (success) {
+      if (result.success) {
         // Refresh bookings list and my appointments
         fetchAvailableBookings();
         fetchMyAppointments();
-        return true;
       }
+      return result;
     } catch (e) {
       print('Error booking appointment: $e');
+      return const BookingResult(
+        success: false,
+        message: 'Error al reservar la cita. Por favor, reintenta.',
+      );
     }
-    return false;
   }
 }

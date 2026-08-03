@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:priora/core/di/injection.dart';
 import 'package:priora/features/doctor/agenda/data/availability_service.dart';
 import 'package:priora/features/doctor/agenda/data/models/weekly_schedule_model.dart';
-import 'package:priora/features/doctor/appointments/data/doctor_appointments_service.dart';
+import 'package:priora/features/doctor/appointments/controller/doctor_appointments_cubit.dart';
+import 'package:priora/features/doctor/appointments/controller/doctor_appointments_state.dart';
 import 'package:priora/features/doctor/appointments/data/models/doctor_appointment_model.dart';
+import 'package:priora/features/doctor/navigation/controller/doctor_navigation_controller.dart';
 import 'package:priora/features/doctor/places/controller/places_cubit.dart';
 import 'package:priora/features/doctor/places/controller/places_state.dart';
 import 'package:priora/features/doctor/places/data/models/place_model.dart';
@@ -82,14 +84,9 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
 
   PlaceModel? _selectedPlace;
   bool _isLoadingBlocks = false;
-  bool _isLoadingAppointments = false;
 
   // Filter selection: null = todos, '__virtual__' = solo virtual, place ID = lugar específico
   String? _selectedFilterId;
-
-  // Appointments
-  List<DoctorAppointment> _todayAppointments = [];
-  List<DoctorAppointment> _upcomingAppointments = [];
 
   bool get _isVirtualSelected => _selectedFilterId == _kVirtualFilterId;
 
@@ -102,47 +99,15 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
   void _loadData() {
     _loadPlaces();
     _loadBlocks();
-    _loadAppointments();
   }
 
-  Future<void> _loadAppointments() async {
-    final authState = context.read<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) return;
-
-    setState(() => _isLoadingAppointments = true);
-    try {
-      final service = getIt<DoctorAppointmentsService>();
-      final all = await service.getMyAppointments(
-        accessToken: authState.accessToken,
-      );
-
-      final now = DateTime.now();
-      final todayApps = all.where((a) =>
-        a.dateTimeObj.year == now.year &&
-        a.dateTimeObj.month == now.month &&
-        a.dateTimeObj.day == now.day &&
-        a.status != 'CANCELED'
-      ).toList()..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
-
-      final upcoming = all.where((a) =>
-        a.dateTimeObj.isAfter(now) &&
-        a.status != 'CANCELED' &&
-        !(a.dateTimeObj.year == now.year &&
-          a.dateTimeObj.month == now.month &&
-          a.dateTimeObj.day == now.day)
-      ).toList()..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
-
-      if (mounted) {
-        setState(() {
-          _todayAppointments = todayApps;
-          _upcomingAppointments = upcoming.take(5).toList();
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading appointments: $e');
-    } finally {
-      if (mounted) setState(() => _isLoadingAppointments = false);
-    }
+  /// Recarga todos los datos de la agenda (lugares, bloques y citas).
+  Future<void> _refreshData() async {
+    await Future.wait([
+      _loadBlocks(),
+      context.read<DoctorAppointmentsCubit>().loadAppointments(),
+    ]);
+    _loadPlaces();
   }
 
   void _loadPlaces() {
@@ -238,9 +203,13 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
-          child: Column(
+        child: RefreshIndicator(
+          color: const Color(0xFF0256C2),
+          onRefresh: _refreshData,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 8),
@@ -263,6 +232,7 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -366,107 +336,119 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
   }
 
   Widget _buildTodayAppointments() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // Las citas vienen del estado compartido del DoctorAppointmentsCubit,
+    // que realiza una sola llamada a GET /appointments/doctor.
+    return BlocBuilder<DoctorAppointmentsCubit, DoctorAppointmentsState>(
+      builder: (context, state) {
+        final todayAppointments = state.todayAppointments;
+        final upcomingAppointments = state.upcomingAppointments.take(5).toList();
+        final isLoading = state.isLoading && todayAppointments.isEmpty;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Citas de hoy',
-              style: TextStyle(
-                color: Color(0xFF1E293B),
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            if (_todayAppointments.isNotEmpty)
-              GestureDetector(
-                onTap: () => context.push('/doctor/appointments'),
-                child: Text(
-                  'Ver todas',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Citas de hoy',
                   style: TextStyle(
-                    color: Color(0xFF0256C2),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        if (_isLoadingAppointments)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Color(0xFF0256C2),
-                ),
-              ),
-            ),
-          )
-        else if (_todayAppointments.isEmpty)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(Icons.event_available_rounded,
-                    size: 32, color: Color(0xFFCBD5E1)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Sin citas para hoy',
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                if (todayAppointments.isNotEmpty)
+                  GestureDetector(
+                    // Va al tab de Citas, que muestra todas con su pestaña "Hoy"
+                    onTap: () =>
+                        context.read<DoctorNavigationCubit>().changeIndex(1),
+                    child: Text(
+                      'Ver todas',
+                      style: TextStyle(
+                        color: Color(0xFF0256C2),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
-          )
-        else
-          ..._todayAppointments.map((appt) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _buildAppointmentCard(appt),
-          )),
-        if (_upcomingAppointments.isNotEmpty) ...[
-          const SizedBox(height: 6),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              'Próximas citas',
-              style: TextStyle(
-                color: Color(0xFF94A3B8),
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+            const SizedBox(height: 10),
+            if (isLoading)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFF0256C2),
+                    ),
+                  ),
+                ),
+              )
+            else if (todayAppointments.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.event_available_rounded,
+                        size: 32, color: Color(0xFFCBD5E1)),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Sin citas para hoy',
+                        style: TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...todayAppointments.map((appt) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildAppointmentCard(appt),
+              )),
+            if (upcomingAppointments.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: Text(
+                  'Próximas citas',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          ..._upcomingAppointments.map((appt) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: _buildAppointmentCard(appt, compact: true),
-          )),
-        ],
-      ],
+              const SizedBox(height: 10),
+              ...upcomingAppointments.map((appt) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _buildAppointmentCard(appt, compact: true),
+              )),
+            ],
+          ],
+        );
+      },
     );
   }
 

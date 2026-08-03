@@ -12,8 +12,13 @@ import 'package:priora/features/shared/auth/data/auth_state.dart';
 
 class TriageScreen extends StatelessWidget {
   final Map<String, dynamic>? initialDraft;
+  final PatientNavigationCubit navigationCubit;
 
-  const TriageScreen({super.key, this.initialDraft});
+  const TriageScreen({
+    super.key,
+    this.initialDraft,
+    required this.navigationCubit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +32,15 @@ class TriageScreen extends StatelessWidget {
         }
         return cubit;
       },
-      child: const _TriageScreenBody(),
+      child: _TriageScreenBody(navigationCubit: navigationCubit),
     );
   }
 }
 
 class _TriageScreenBody extends StatefulWidget {
-  const _TriageScreenBody();
+  final PatientNavigationCubit navigationCubit;
+
+  const _TriageScreenBody({required this.navigationCubit});
 
   @override
   State<_TriageScreenBody> createState() => _TriageScreenBodyState();
@@ -179,7 +186,7 @@ class _TriageScreenBodyState extends State<_TriageScreenBody> {
     } else {
       return TriageResultView(
         state: state,
-        navigationCubit: context.read<PatientNavigationCubit>(),
+        navigationCubit: widget.navigationCubit,
       );
     }
   }

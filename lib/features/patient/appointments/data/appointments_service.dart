@@ -1,5 +1,18 @@
 import 'package:dio/dio.dart';
 
+/// Resultado de una reserva de cita.
+class BookingResult {
+  final bool success;
+  final String? message;
+  final bool isDuplicateSpecialty;
+
+  const BookingResult({
+    required this.success,
+    this.message,
+    this.isDuplicateSpecialty = false,
+  });
+}
+
 class AppointmentsService {
   final Dio _dio;
 
@@ -39,17 +52,67 @@ class AppointmentsService {
     throw Exception('Error al obtener disponibilidad');
   }
 
-  Future<bool> bookAppointment({
+  Future<BookingResult> bookAppointment({
     required String accessToken,
     required String doctorId,
     required String datetime,
+    String? meetingType,
+    String? placeId,
+    String? triageSessionId,
+    String? specialty,
+    bool acknowledgeDuplicateSpecialty = false,
   }) async {
-    final response = await _dio.post(
-      '/appointments',
-      data: {"doctorId": doctorId, "datetime": datetime},
-      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
-    );
-    return response.statusCode == 200 || response.statusCode == 201;
+    final data = <String, dynamic>{
+      'doctorId': doctorId,
+      'datetime': datetime,
+      'meetingType': meetingType ?? 'VIRTUAL',
+      'specialty': specialty,
+      'acknowledgeDuplicateSpecialty': acknowledgeDuplicateSpecialty,
+      if (placeId != null && placeId.isNotEmpty) 'placeId': placeId,
+      if (triageSessionId != null && triageSessionId.isNotEmpty)
+        'triageSessionId': triageSessionId,
+    };
+
+    try {
+      final response = await _dio.post(
+        '/appointments',
+        data: data,
+        options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+      );
+      return BookingResult(
+        success: response.statusCode == 200 || response.statusCode == 201,
+      );
+    } on DioException catch (e) {
+      // Los errores 4xx (excepto 401, que gestiona el interceptor de auth)
+      // deben devolverse como resultado y no romper el flujo de reserva.
+      final status = e.response?.statusCode;
+      if (status != null && status != 401) {
+        final message = _extractErrorMessage(e);
+        return BookingResult(
+          success: false,
+          message: message,
+          isDuplicateSpecialty: _isDuplicateSpecialtyMessage(message),
+        );
+      }
+      rethrow;
+    }
+  }
+
+  String? _extractErrorMessage(DioException e) {
+    final data = e.response?.data;
+    if (data is Map && data['message'] != null) {
+      final msg = data['message'];
+      if (msg is String && msg.isNotEmpty) return msg;
+      if (msg is List && msg.isNotEmpty) return msg.join('\n');
+    }
+    return 'Error al reservar la cita. Por favor, reintenta.';
+  }
+
+  bool _isDuplicateSpecialtyMessage(String? message) {
+    if (message == null) return false;
+    final lower = message.toLowerCase();
+    return lower.contains('ya tienes una cita próxima') ||
+        lower.contains('reservar de todos modos');
   }
 
   Future<List<dynamic>> fetchMyAppointments({required String accessToken}) async {

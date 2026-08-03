@@ -28,43 +28,44 @@ class DoctorAppointmentsService {
     throw Exception('Error al obtener citas');
   }
 
-  /// Obtiene las citas de hoy del profesional
-  Future<List<DoctorAppointment>> getTodayAppointments({
+  /// Registra la atención de una cita (profesional)
+  /// Endpoint: PATCH /appointments/{id}/attendance
+  /// Body: RegisterAttendanceDto { attendanceNote: string (mín. 10 caracteres) }
+  Future<void> registerAttendance({
     required String accessToken,
+    required String appointmentId,
+    required String attendanceNote,
   }) async {
-    final all = await getMyAppointments(accessToken: accessToken);
-    final now = DateTime.now();
-    return all
-        .where((a) =>
-            a.dateTimeObj.year == now.year &&
-            a.dateTimeObj.month == now.month &&
-            a.dateTimeObj.day == now.day &&
-            a.status != 'CANCELED')
-        .toList()
-      ..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
+    final response = await _dio.patch(
+      '/appointments/$appointmentId/attendance',
+      data: {'attendanceNote': attendanceNote},
+      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error al registrar atención');
+    }
   }
 
-  /// Obtiene las próximas citas (futuras, no canceladas)
-  Future<List<DoctorAppointment>> getUpcomingAppointments({
+  /// Cancela una cita (profesional o paciente de la cita)
+  /// Endpoint: PATCH /appointments/{id}/cancel
+  /// Body: CancelAppointmentDto { cancelReason?: string }
+  Future<void> cancelAppointment({
     required String accessToken,
+    required String appointmentId,
+    String? cancelReason,
   }) async {
-    final all = await getMyAppointments(accessToken: accessToken);
-    final now = DateTime.now();
-    return all
-        .where((a) =>
-            a.dateTimeObj.isAfter(now) && a.status != 'CANCELED' && !a.isToday)
-        .toList()
-      ..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
-  }
+    final response = await _dio.patch(
+      '/appointments/$appointmentId/cancel',
+      data: {
+        if (cancelReason != null && cancelReason.isNotEmpty)
+          'cancelReason': cancelReason,
+      },
+      options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
+    );
 
-  /// Obtiene citas pasadas (completadas o canceladas)
-  Future<List<DoctorAppointment>> getPastAppointments({
-    required String accessToken,
-  }) async {
-    final all = await getMyAppointments(accessToken: accessToken);
-    return all
-        .where((a) => a.isPast && !a.isToday)
-        .toList()
-      ..sort((a, b) => b.dateTimeObj.compareTo(a.dateTimeObj)); // más recientes primero
+    if (response.statusCode != 200) {
+      throw Exception('Error al cancelar la cita');
+    }
   }
 }

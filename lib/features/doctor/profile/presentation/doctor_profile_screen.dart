@@ -1,47 +1,153 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:priora/core/di/injection.dart';
+import 'package:priora/features/doctor/appointments/controller/doctor_appointments_cubit.dart';
+import 'package:priora/features/doctor/appointments/controller/doctor_appointments_state.dart';
+import 'package:priora/features/doctor/places/controller/places_cubit.dart';
+import 'package:priora/features/doctor/places/controller/places_state.dart';
+import 'package:priora/features/doctor/places/data/models/place_model.dart';
+import 'package:priora/features/doctor/profile/data/doctor_profile_service.dart';
+import 'package:priora/features/doctor/profile/data/models/doctor_profile_model.dart';
 import 'package:priora/features/patient/profile/presentation/widgets/logout_button.dart';
 import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 import 'package:priora/features/shared/auth/data/auth_event.dart';
+import 'package:priora/features/shared/auth/data/auth_state.dart';
 
-class DoctorProfileScreen extends StatelessWidget {
+class DoctorProfileScreen extends StatefulWidget {
   const DoctorProfileScreen({super.key});
+
+  @override
+  State<DoctorProfileScreen> createState() => _DoctorProfileScreenState();
+}
+
+class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
+  DoctorProfileModel? _profile;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final authState = context.read<AuthBloc>().state;
+    if (authState is! AuthAuthenticated) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    final placesCubit = context.read<PlacesCubit>();
+
+    try {
+      final profileService = getIt<DoctorProfileService>();
+      final profile = await profileService.getProfessionalProfile(
+        accessToken: authState.accessToken,
+      );
+
+      // Lugares de atención (GET /places/me)
+      placesCubit.loadPlaces(accessToken: authState.accessToken);
+
+      // Las métricas de citas se calculan desde el estado compartido del
+      // DoctorAppointmentsCubit (una sola llamada a GET /appointments/doctor).
+      if (!mounted) return;
+      setState(() {
+        _profile = profile;
+      });
+    } catch (e) {
+      debugPrint('Error loading profile: $e');
+      if (mounted) {
+        setState(() => _error = 'No se pudo cargar el perfil');
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              _buildProfileHeader(context),
-              const SizedBox(height: 20),
-              _buildEditButton(context),
-              const SizedBox(height: 20),
-              _buildBioSection(),
-              const SizedBox(height: 16),
-              _buildContactSection(),
-              const SizedBox(height: 16),
-              _buildPlacesSection(),
-              const SizedBox(height: 16),
-              _buildWeeklySummary(),
-              const SizedBox(height: 16),
-              _buildProgressCard(),
-              const SizedBox(height: 24),
-              _buildLogoutButton(context),
-              const SizedBox(height: 24),
-            ],
-          ),
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(color: Color(0xFF0256C2)),
+              )
+            : _profile == null || _error != null
+                ? _buildError()
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 12),
+                        _buildProfileHeader(_profile!),
+                        const SizedBox(height: 20),
+                        _buildEditButton(context),
+                        const SizedBox(height: 20),
+                        _buildBioSection(_profile!),
+                        const SizedBox(height: 16),
+                        _buildContactSection(_profile!),
+                        const SizedBox(height: 16),
+                        _buildPlacesSection(),
+                        const SizedBox(height: 16),
+                        _buildWeeklySummary(_profile!),
+                        const SizedBox(height: 16),
+                        _buildProgressCard(_profile!),
+                        const SizedBox(height: 24),
+                        _buildLogoutButton(context),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+      ),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.cloud_off_rounded,
+                size: 44, color: Color(0xFFCBD5E1)),
+            const SizedBox(height: 12),
+            Text(
+              _error ?? 'Error al cargar el perfil',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF64748B),
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadData,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0256C2),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Reintentar'),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileHeader(BuildContext context) {
+  Widget _buildProfileHeader(DoctorProfileModel profile) {
+    final hasPhoto = profile.profilePhotoUrl != null &&
+        profile.profilePhotoUrl!.isNotEmpty;
     return Column(
       children: [
         Stack(
@@ -54,8 +160,25 @@ class DoctorProfileScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 color: const Color(0xFFE2E8F0),
               ),
+              clipBehavior: Clip.antiAlias,
               alignment: Alignment.center,
-              child: const Icon(Icons.person, size: 48, color: Color(0xFF94A3B8)),
+              child: hasPhoto
+                  ? Image.network(
+                      profile.profilePhotoUrl!,
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.person,
+                        size: 48,
+                        color: Color(0xFF94A3B8),
+                      ),
+                    )
+                  : const Icon(
+                      Icons.person,
+                      size: 48,
+                      color: Color(0xFF94A3B8),
+                    ),
             ),
             Positioned(
               bottom: -4,
@@ -73,33 +196,57 @@ class DoctorProfileScreen extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Dr. Roberto Valdivia',
-          style: TextStyle(
+        Text(
+          profile.displayName,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
             color: Color(0xFF1E293B),
             fontSize: 22,
             fontWeight: FontWeight.w800,
           ),
         ),
         const SizedBox(height: 4),
-        const Text(
-          'Cardiología',
-          style: TextStyle(
+        Text(
+          profile.primarySpecialty ?? 'Profesional de salud',
+          textAlign: TextAlign.center,
+          style: const TextStyle(
             color: Color(0xFF0256C2),
             fontSize: 15,
             fontWeight: FontWeight.w500,
           ),
         ),
         const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildTag('Cuerpo Médico', const Color(0xFFE0F7F6), const Color(0xFF0C6159)),
-            const SizedBox(width: 8),
-            _buildTag('CMP 45823', const Color(0xFFF1F5F9), const Color(0xFF64748B)),
-          ],
-        ),
+        _buildTags(profile),
       ],
+    );
+  }
+
+  Widget _buildTags(DoctorProfileModel profile) {
+    final tags = <String>[
+      ...profile.professions.map((p) => p.name),
+    ];
+    if (profile.documentId != null && profile.documentId!.isNotEmpty) {
+      final docType = profile.documentType ?? 'DOC';
+      tags.add('$docType ${profile.documentId}');
+    }
+    if (tags.isEmpty) tags.add('Profesional de salud');
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: WrapAlignment.center,
+      children: List.generate(tags.length, (index) {
+        final isPrimary = index.isEven;
+        return _buildTag(
+          tags[index],
+          isPrimary
+              ? const Color(0xFFE0F7F6)
+              : const Color(0xFFF1F5F9),
+          isPrimary
+              ? const Color(0xFF0C6159)
+              : const Color(0xFF64748B),
+        );
+      }),
     );
   }
 
@@ -159,7 +306,8 @@ class DoctorProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBioSection() {
+  Widget _buildBioSection(DoctorProfileModel profile) {
+    final bio = profile.bio?.trim() ?? '';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -173,10 +321,14 @@ class DoctorProfileScreen extends StatelessWidget {
         children: [
           _buildSectionHeader(Icons.description_outlined, 'Biografía'),
           const SizedBox(height: 12),
-          const Text(
-            'Cardiólogo intervencionista con más de 15 años de experiencia en el diagnóstico y tratamiento de enfermedades cardiovasculares. Formado en la Universidad Nacional Mayor de San Marcos con subespecialidad en Hemodinamia. Mi enfoque se centra en brindar una atención integral y personalizada a cada paciente.',
+          Text(
+            bio.isEmpty
+                ? 'Aún no has añadido una biografía.'
+                : bio,
             style: TextStyle(
-              color: Color(0xFF475569),
+              color: bio.isEmpty
+                  ? const Color(0xFF94A3B8)
+                  : const Color(0xFF475569),
               fontSize: 14,
               height: 1.5,
             ),
@@ -186,7 +338,7 @@ class DoctorProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactSection() {
+  Widget _buildContactSection(DoctorProfileModel profile) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -200,9 +352,19 @@ class DoctorProfileScreen extends StatelessWidget {
         children: [
           _buildSectionHeader(Icons.contact_page_outlined, 'Contacto'),
           const SizedBox(height: 12),
-          _buildContactRow(Icons.email_outlined, 'Correo electrónico', 'r.valdivia@orientasalud.pe'),
+          _buildContactRow(
+            Icons.email_outlined,
+            'Correo electrónico',
+            profile.email.isEmpty ? 'No registrado' : profile.email,
+          ),
           const SizedBox(height: 12),
-          _buildContactRow(Icons.phone_outlined, 'Teléfono', '+51 987 654 321'),
+          _buildContactRow(
+            Icons.phone_outlined,
+            'Teléfono',
+            (profile.phone == null || profile.phone!.isEmpty)
+                ? 'No registrado'
+                : profile.phone!,
+          ),
         ],
       ),
     );
@@ -251,17 +413,73 @@ class DoctorProfileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(Icons.local_hospital_outlined, 'Lugares de Atención'),
+          _buildSectionHeader(
+            Icons.local_hospital_outlined,
+            'Lugares de Atención',
+          ),
           const SizedBox(height: 12),
-          _buildPlaceRow(Icons.medical_services_outlined, const Color(0xFF0256C2), 'Clínica San Borja'),
-          const SizedBox(height: 8),
-          _buildPlaceRow(Icons.business_outlined, const Color(0xFF059669), 'Sede Miraflores'),
+          BlocBuilder<PlacesCubit, PlacesState>(
+            builder: (context, state) {
+              if (state is PlacesLoading) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Color(0xFF0256C2),
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              final places = state is PlacesLoaded
+                  ? state.places
+                  : <PlaceModel>[];
+              if (places.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Sin lugares de atención registrados',
+                    style: TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 14,
+                    ),
+                  ),
+                );
+              }
+
+              return Column(
+                children: List.generate(places.length, (index) {
+                  final place = places[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index == places.length - 1 ? 0 : 8,
+                    ),
+                    child: _buildPlaceRow(
+                      index.isEven
+                          ? Icons.medical_services_outlined
+                          : Icons.business_outlined,
+                      index.isEven
+                          ? const Color(0xFF0256C2)
+                          : const Color(0xFF059669),
+                      place.name,
+                      place.locationLabel,
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPlaceRow(IconData icon, Color iconColor, String name) {
+  Widget _buildPlaceRow(IconData icon, Color iconColor, String name, String subtitle) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
@@ -273,13 +491,26 @@ class DoctorProfileScreen extends StatelessWidget {
           Icon(icon, size: 20, color: iconColor),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              name,
-              style: const TextStyle(
-                color: Color(0xFF1E293B),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    color: Color(0xFF1E293B),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
             ),
           ),
           const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8), size: 22),
@@ -288,37 +519,60 @@ class DoctorProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildWeeklySummary() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0256C2),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Resumen Semanal',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
+  Widget _buildWeeklySummary(DoctorProfileModel profile) {
+    final rating = profile.rating != null
+        ? profile.rating!.toStringAsFixed(1)
+        : '—';
+    return BlocBuilder<DoctorAppointmentsCubit, DoctorAppointmentsState>(
+      builder: (context, state) {
+        final allAppointments = [
+          ...state.todayAppointments,
+          ...state.upcomingAppointments,
+          ...state.pastAppointments,
+        ];
+        final totalAppointments = allAppointments.length;
+        final totalPatients = allAppointments
+            .map((a) => a.patient.id)
+            .where((id) => id.isNotEmpty)
+            .toSet()
+            .length;
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0256C2),
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(height: 16),
-          Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _buildMetric('24', 'Citas')),
-              const SizedBox(width: 12),
-              Expanded(child: _buildMetric('12', 'Pacientes')),
-              const SizedBox(width: 12),
-              Expanded(child: _buildMetric('98%', 'Rating')),
+              const Text(
+                'Resumen',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildMetric('$totalAppointments', 'Citas'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildMetric('$totalPatients', 'Pacientes'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildMetric(rating, 'Rating')),
+                ],
+              ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -363,7 +617,9 @@ class DoctorProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressCard() {
+  Widget _buildProgressCard(DoctorProfileModel profile) {
+    final percent = profile.completionPercent;
+    final nextStep = _nextStep(profile);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -387,32 +643,33 @@ class DoctorProfileScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                '85% Completado',
-                style: TextStyle(
+              Text(
+                '$percent% Completado',
+                style: const TextStyle(
                   color: Color(0xFF64748B),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              GestureDetector(
-                onTap: () {},
-                child: const Text(
-                  'Siguiente: Añadir Bio',
-                  style: TextStyle(
-                    color: Color(0xFF0256C2),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+              if (nextStep != null)
+                GestureDetector(
+                  onTap: () {},
+                  child: Text(
+                    'Siguiente: $nextStep',
+                    style: const TextStyle(
+                      color: Color(0xFF0256C2),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
-              value: 0.85,
+              value: percent / 100,
               backgroundColor: const Color(0xFFE2E8F0),
               valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00CBB8)),
               minHeight: 8,
@@ -421,5 +678,17 @@ class DoctorProfileScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String? _nextStep(DoctorProfileModel profile) {
+    if (profile.bio == null || profile.bio!.trim().isEmpty) return 'Añadir Bio';
+    if (profile.profilePhotoUrl == null || profile.profilePhotoUrl!.isEmpty) {
+      return 'Añadir Foto';
+    }
+    if (profile.phone == null || profile.phone!.trim().isEmpty) {
+      return 'Añadir Teléfono';
+    }
+    if (profile.specialties.isEmpty) return 'Completar Especialidades';
+    return null;
   }
 }

@@ -130,7 +130,8 @@ class AppointmentsRepository {
       List<String> formattedSlots = [];
       for (var s in slots) {
         try {
-          final dt = DateTime.parse(s);
+          // Hora local para que sea consistente con el resto de la app
+          final dt = DateTime.parse(s).toLocal();
           final hour = dt.hour.toString().padLeft(2, '0');
           final min = dt.minute.toString().padLeft(2, '0');
           formattedSlots.add('$hour:$min');
@@ -156,15 +157,25 @@ class AppointmentsRepository {
     }).toList();
   }
 
-  Future<bool> bookAppointment({
+  Future<BookingResult> bookAppointment({
     required String accessToken,
     required String doctorId,
     required String datetime,
+    String? meetingType,
+    String? placeId,
+    String? triageSessionId,
+    String? specialty,
+    bool acknowledgeDuplicateSpecialty = false,
   }) async {
     return _service.bookAppointment(
       accessToken: accessToken,
       doctorId: doctorId,
       datetime: datetime,
+      meetingType: meetingType,
+      placeId: placeId,
+      triageSessionId: triageSessionId,
+      specialty: specialty,
+      acknowledgeDuplicateSpecialty: acknowledgeDuplicateSpecialty,
     );
   }
 

@@ -59,6 +59,7 @@ class AuthInterceptor extends Interceptor {
       }
       return super.onError(err, handler);
     }
+ 
 
     final prefs = await SharedPreferences.getInstance();
     final refreshToken = prefs.getString('refreshToken');

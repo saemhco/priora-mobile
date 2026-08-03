@@ -231,10 +231,13 @@ class _HealthScreenState extends State<HealthScreen> {
                 TextButton(
                   onPressed: () {
                     Navigator.pop(dialogContext); // Close dialog
+                    final navigationCubit =
+                        context.read<PatientNavigationCubit>();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TriageScreen(),
+                        builder: (context) =>
+                            TriageScreen(navigationCubit: navigationCubit),
                       ),
                     ).then((_) => _fetchHistory());
                   },
@@ -249,11 +252,15 @@ class _HealthScreenState extends State<HealthScreen> {
                 ElevatedButton(
                   onPressed: () {
                     Navigator.pop(dialogContext); // Close dialog
+                    final navigationCubit =
+                        context.read<PatientNavigationCubit>();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            TriageScreen(initialDraft: draftData),
+                        builder: (context) => TriageScreen(
+                          initialDraft: draftData,
+                          navigationCubit: navigationCubit,
+                        ),
                       ),
                     ).then((_) => _fetchHistory());
                   },
@@ -275,9 +282,13 @@ class _HealthScreenState extends State<HealthScreen> {
           },
         );
       } else {
+        final navigationCubit = context.read<PatientNavigationCubit>();
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const TriageScreen()),
+          MaterialPageRoute(
+            builder: (context) =>
+                TriageScreen(navigationCubit: navigationCubit),
+          ),
         ).then((_) {
           _fetchHistory();
         });

@@ -28,4 +28,42 @@ class DoctorModel {
     required this.rawSlots,
     this.selectedTimeSlot,
   });
+
+  /// Devuelve el tipo de reunión (VIRTUAL / IN_PERSON) del slot que coincide
+  /// con la hora dada (formato HH:mm), o null si no se encuentra.
+  String? meetingTypeForSlot(String hour) {
+    for (final slot in rawSlots) {
+      final datetimeStr = slot['datetime']?.toString() ?? '';
+      if (datetimeStr.isEmpty) continue;
+      try {
+        final dt = DateTime.parse(datetimeStr).toLocal();
+        final h = dt.hour.toString().padLeft(2, '0');
+        final m = dt.minute.toString().padLeft(2, '0');
+        if ('$h:$m' == hour) {
+          return slot['meetingType']?.toString().toUpperCase();
+        }
+      } catch (_) {
+        // Ignorar slots con fecha inválida
+      }
+    }
+    return null;
+  }
+
+  /// Devuelve el datetime ISO completo del slot que coincide con la hora dada
+  /// (formato HH:mm en hora local), o una cadena vacía si no se encuentra.
+  String originalSlotForHour(String hour) {
+    for (final slot in originalSlots) {
+      try {
+        final dt = DateTime.parse(slot).toLocal();
+        final h = dt.hour.toString().padLeft(2, '0');
+        final m = dt.minute.toString().padLeft(2, '0');
+        if ('$h:$m' == hour) {
+          return slot;
+        }
+      } catch (_) {
+        // Ignorar slots con fecha inválida
+      }
+    }
+    return '';
+  }
 }

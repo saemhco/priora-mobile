@@ -13,6 +13,7 @@ import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit
 
 import 'package:priora/features/doctor/agenda/data/availability_service.dart';
 import 'package:priora/features/doctor/appointments/data/doctor_appointments_service.dart';
+import 'package:priora/features/doctor/profile/data/doctor_profile_service.dart';
 import 'package:priora/features/doctor/places/controller/places_cubit.dart';
 import 'package:priora/features/doctor/places/data/places_service.dart';
 import 'package:priora/features/doctor/places/data/places_repository.dart';
@@ -39,6 +40,9 @@ Future<void> initInjection() async {
   );
   getIt.registerLazySingleton<DoctorAppointmentsService>(
     () => DoctorAppointmentsService(getIt<Dio>()),
+  );
+  getIt.registerLazySingleton<DoctorProfileService>(
+    () => DoctorProfileService(getIt<Dio>()),
   );
 
   // Repositories

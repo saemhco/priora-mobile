@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
 import 'package:priora/features/patient/appointments/controller/appointments_controller.dart';
 
@@ -36,24 +35,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   }
 
   void _determineSlotMeetingType() {
-    final matchingRawSlot = widget.doctor.rawSlots.firstWhere((s) {
-      final datetimeStr = s['datetime']?.toString() ?? '';
-      if (datetimeStr.isEmpty) return false;
-      try {
-        final dt = DateTime.parse(datetimeStr).toLocal();
-        final hour = dt.hour.toString().padLeft(2, '0');
-        final min = dt.minute.toString().padLeft(2, '0');
-        final formatted = '$hour:$min';
-        return formatted == widget.slot;
-      } catch (_) {
-        return false;
-      }
-    }, orElse: () => <String, dynamic>{});
-
-    if (matchingRawSlot.isNotEmpty) {
-      final meetingType = matchingRawSlot['meetingType']
-          ?.toString()
-          .toUpperCase();
+    final meetingType = widget.doctor.meetingTypeForSlot(widget.slot);
+    if (meetingType != null) {
       _isSlotVirtual = meetingType == 'VIRTUAL';
     } else {
       _isSlotVirtual = widget.doctor.isVirtual;
@@ -67,12 +50,8 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
   }
 
   String _formatSlotDate(String originalSlot) {
-    // Try parsing date from originalSlots (which contains full ISO date)
-    // widget.slot is like "09:30". Let's find the matching full date.
-    final fullDateStr = widget.doctor.originalSlots.firstWhere(
-      (s) => s.contains(widget.slot),
-      orElse: () => '',
-    );
+    // Encuentra el datetime ISO completo que coincide con la hora del slot
+    final fullDateStr = widget.doctor.originalSlotForHour(originalSlot);
     if (fullDateStr.isEmpty) return 'Hoy';
 
     try {
@@ -131,22 +110,39 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
       ),
     );
 
-    final success = await widget.controller.bookAppointment(
-      widget.doctor.id,
-      widget.slot,
+    final apiMeetingType =
+        _consultationType == 'VIRTUAL' ? 'VIRTUAL' : 'IN_PERSON';
+    final result = await widget.controller.bookAppointment(
+      doctorId: widget.doctor.id,
+      timeSlot: widget.slot,
+      meetingType: apiMeetingType,
+      acknowledgeDuplicateSpecialty: _bypassDuplicateCheck,
     );
 
     if (mounted) {
       Navigator.of(context).pop(); // Close loading spinner
 
-      if (success) {
+      if (result.success) {
         setState(() {
           _bookingSuccess = true;
         });
+      } else if (result.isDuplicateSpecialty) {
+        // El backend confirma la cita duplicada → mostrar la vista de conflicto
+        // con la opción de reservar de todos modos.
+        setState(() {
+          _existingAppointmentConflict = {
+            'doctorName': widget.doctor.name,
+            'formattedDate': _formatSlotDate(widget.slot),
+            'formattedTime': widget.slot,
+          };
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error al reservar la cita. Por favor, reintenta.'),
+          SnackBar(
+            content: Text(
+              result.message ??
+                  'Error al reservar la cita. Por favor, reintenta.',
+            ),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
           ),
@@ -393,7 +389,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ),
               ),
               const Spacer(),
-              SizedBox(
+             /* SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
@@ -417,7 +413,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 12),*/
               SizedBox(
                 width: double.infinity,
                 height: 52,

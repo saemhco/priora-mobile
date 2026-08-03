@@ -62,6 +62,99 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
     );
   }
 
+  /// Toggle para mostrar u ocultar citas pasadas en "Mis citas".
+  Widget _buildPastAppointmentsToggle(AppointmentsController controller) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.history_rounded,
+            color: Color(0xFF64748B),
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Mostrar citas pasadas',
+                  style: TextStyle(
+                    color: Color(0xFF1E293B),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Actívalo para ver citas que ya se realizaron',
+                  style: TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: controller.showPastAppointments,
+            onChanged: (_) => controller.toggleShowPastAppointments(),
+            activeTrackColor: const Color(0xFF0256C2),
+            activeThumbColor: Colors.white,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Mensaje cuando hay citas pero ninguna es vigente (todas pasadas y el
+  /// toggle de pasadas está desactivado).
+  Widget _buildNoActiveAppointments() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: const Column(
+        children: [
+          Icon(
+            Icons.event_available_rounded,
+            color: Color(0xFFCBD5E1),
+            size: 32,
+          ),
+          SizedBox(height: 10),
+          Text(
+            'No tienes citas vigentes',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF1E293B),
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            'Activa "Mostrar citas pasadas" para ver el historial.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xFF94A3B8),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_controller == null) {
@@ -77,6 +170,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
       builder: (context, child) {
         final doctors = _controller!.filteredDoctors;
         final myAppointments = _controller!.myAppointments;
+        final filteredMyAppointments = _controller!.filteredMyAppointments;
 
         return DefaultTabController(
           key: ValueKey(_controller!.selectedSubTab),
@@ -466,9 +560,20 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                                     horizontal: 20,
                                     vertical: 16,
                                   ),
-                                  itemCount: myAppointments.length,
+                                  itemCount: filteredMyAppointments.isEmpty
+                                      ? 2
+                                      : filteredMyAppointments.length + 1,
                                   itemBuilder: (context, index) {
-                                    final appointment = myAppointments[index];
+                                    if (index == 0) {
+                                      return _buildPastAppointmentsToggle(
+                                        _controller!,
+                                      );
+                                    }
+                                    if (filteredMyAppointments.isEmpty) {
+                                      return _buildNoActiveAppointments();
+                                    }
+                                    final appointment =
+                                        filteredMyAppointments[index - 1];
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 16),
                                       padding: const EdgeInsets.all(16),
