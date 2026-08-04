@@ -53,12 +53,12 @@ class _SplashScreenState extends State<SplashScreen>
 
     _logoPulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.12)
+        tween: Tween<double>(begin: 1.0, end: 1.06)
             .chain(CurveTween(curve: Curves.easeOut)),
         weight: 35,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.12, end: 0.98)
+        tween: Tween<double>(begin: 1.06, end: 0.98)
             .chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
@@ -72,7 +72,7 @@ class _SplashScreenState extends State<SplashScreen>
     _introController.forward().then((_) {
       _pulseController.repeat();
     });
-    
+
     // Trigger restoration request or navigate if state is already resolved
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authBloc = context.read<AuthBloc>();
@@ -125,21 +125,42 @@ class _SplashScreenState extends State<SplashScreen>
           width: double.infinity,
           height: double.infinity,
           decoration: const BoxDecoration(
-            color: Color(0xFF0F172A), // Deep Slate background
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFF1F5F9), Color(0xFFF8FAFC)],
+            ),
           ),
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Premium ambient glow background effect
+              // Ambient brand glow
               Positioned(
+                top: -size.width * 0.25,
                 child: Container(
-                  width: size.width * 0.75,
-                  height: size.width * 0.75,
+                  width: size.width * 0.9,
+                  height: size.width * 0.9,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        const Color(0xFF0256C2).withValues(alpha: 0.25),
+                        const Color(0xFF00CBB8).withValues(alpha: 0.14),
+                        const Color(0xFF00CBB8).withValues(alpha: 0.0),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -size.width * 0.25,
+                child: Container(
+                  width: size.width * 0.9,
+                  height: size.width * 0.9,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF0256C2).withValues(alpha: 0.12),
                         const Color(0xFF0256C2).withValues(alpha: 0.0),
                       ],
                     ),
@@ -158,62 +179,61 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Pulse/Heartbeat Logo container
+                          // App icon container (matches onboarding)
                           Transform.scale(
                             scale: _logoPulseAnimation.value,
                             child: Container(
-                              padding: const EdgeInsets.all(24),
+                              width: 120,
+                              height: 120,
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [Color(0xFF0256C2), Color(0xFF00CBB8)],
+                                ),
+                                borderRadius: BorderRadius.circular(36),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF0256C2).withValues(alpha: 0.2),
-                                    blurRadius: 30,
-                                    spreadRadius: 2,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    blurRadius: 15,
-                                    spreadRadius: -4,
+                                    color: const Color(0xFF0256C2).withValues(alpha: 0.35),
+                                    blurRadius: 40,
+                                    offset: const Offset(0, 16),
                                   ),
                                 ],
                               ),
                               child: const Icon(
-                                Icons.favorite_rounded,
-                                color: Color(0xFF0256C2),
+                                Icons.healing_rounded,
+                                color: Colors.white,
                                 size: 64,
                               ),
                             ),
                           ),
                           const SizedBox(height: 32),
-                          
+
                           // Brand Typography
                           Text(
                             'Priora',
                             style: theme.textTheme.headlineLarge?.copyWith(
                               fontSize: 40,
                               fontWeight: FontWeight.w900,
-                              color: Colors.white,
+                              color: const Color(0xFF0256C2),
                               letterSpacing: 1.2,
                             ),
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Tu salud, nuestra prioridad',
+                            'Orienta · Prioriza · Conecta',
                             style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 15,
+                              color: Color(0xFF475569),
+                              fontWeight: FontWeight.w600,
                               letterSpacing: 0.5,
                             ),
                           ),
                           const SizedBox(height: 80),
-                          
-                          // Modern Dots Pulsing Loading Indicator
+
+                          // Loading Indicator
                           const _ThreeDotLoading(
-                            color: Colors.white70,
+                            color: Color(0xFF0256C2),
                             size: 8.0,
                           ),
                         ],
@@ -273,7 +293,7 @@ class _ThreeDotLoadingState extends State<_ThreeDotLoading>
             final delay = index * 0.25;
             final double value = math.sin((_controller.value * 2 * math.pi) - (delay * 2 * math.pi));
             final double scale = 0.5 + (0.5 * (value + 1.0) / 2.0);
-            
+
             return Opacity(
               opacity: 0.4 + (0.6 * (value + 1.0) / 2.0),
               child: Transform.scale(
