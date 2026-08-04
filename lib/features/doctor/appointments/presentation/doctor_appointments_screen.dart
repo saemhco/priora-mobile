@@ -60,7 +60,7 @@ class DoctorAppointmentsScreen extends StatelessWidget {
     DoctorAppointment appointment,
   ) async {
     final cubit = context.read<DoctorAppointmentsCubit>();
-    final cancelled = await showModalBottomSheet<bool>(
+    final result = await showModalBottomSheet<CancelAppointmentResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.white,
@@ -76,14 +76,20 @@ class DoctorAppointmentsScreen extends StatelessWidget {
       ),
     );
 
-    if (cancelled == true && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Cita cancelada correctamente'),
-          backgroundColor: Color(0xFF475569),
+    if (result == null || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          result.success
+              ? 'Cita cancelada correctamente'
+              : (result.message ?? 'No se pudo cancelar la cita'),
         ),
-      );
-    }
+        backgroundColor: result.success
+            ? const Color(0xFF475569)
+            : const Color(0xFFEF4444),
+      ),
+    );
   }
 
   @override
@@ -872,7 +878,6 @@ class _CancelAppointmentSheet extends StatefulWidget {
 class _CancelAppointmentSheetState extends State<_CancelAppointmentSheet> {
   final TextEditingController _reasonController = TextEditingController();
   bool _isSubmitting = false;
-  String? _errorMessage;
 
   @override
   void dispose() {
@@ -881,24 +886,13 @@ class _CancelAppointmentSheetState extends State<_CancelAppointmentSheet> {
   }
 
   Future<void> _submit() async {
-    setState(() {
-      _isSubmitting = true;
-      _errorMessage = null;
-    });
+    setState(() => _isSubmitting = true);
 
     final reason = _reasonController.text.trim();
     final result = await widget.onCancel(reason.isEmpty ? null : reason);
     if (!mounted) return;
 
-    if (result.success) {
-      Navigator.pop(context, true);
-    } else {
-      setState(() {
-        _isSubmitting = false;
-        _errorMessage = result.message ??
-            'Error al cancelar la cita. Inténtalo de nuevo.';
-      });
-    }
+    Navigator.pop(context, result);
   }
 
   @override
@@ -1097,39 +1091,6 @@ class _CancelAppointmentSheetState extends State<_CancelAppointmentSheet> {
                 ),
               ),
             ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFECACA)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.error_outline_rounded,
-                      color: Color(0xFFDC2626),
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: const TextStyle(
-                          color: Color(0xFFB91C1C),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
             const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,

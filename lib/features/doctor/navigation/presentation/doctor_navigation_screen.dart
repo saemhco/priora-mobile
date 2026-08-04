@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:priora/features/doctor/agenda/presentation/doctor_agenda_screen.dart';
+import 'package:priora/features/doctor/agenda/controller/agenda_cubit.dart';
+import 'package:priora/features/doctor/agenda/data/availability_service.dart';
 import 'package:priora/features/doctor/appointments/controller/doctor_appointments_cubit.dart';
 import 'package:priora/features/doctor/appointments/data/doctor_appointments_service.dart';
 import 'package:priora/features/doctor/appointments/presentation/doctor_appointments_screen.dart';
@@ -26,6 +28,7 @@ class DoctorNavigationScreen extends StatefulWidget {
 class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
   late final DoctorAppointmentsCubit _appointmentsCubit;
   late final DoctorProfileCubit _profileCubit;
+  late final AgendaCubit _agendaCubit;
   late final List<Widget> _tabs;
 
   @override
@@ -42,6 +45,10 @@ class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
       getIt<DoctorProfileService>(),
       accessToken,
     );
+    _agendaCubit = AgendaCubit(
+      getIt<AvailabilityService>(),
+      accessToken,
+    );
     _tabs = [
       const DoctorAgendaScreen(),
       const DoctorAppointmentsScreen(),
@@ -56,6 +63,7 @@ class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
   void dispose() {
     _appointmentsCubit.close();
     _profileCubit.close();
+    _agendaCubit.close();
     super.dispose();
   }
 
@@ -67,25 +75,28 @@ class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
         value: _appointmentsCubit,
         child: BlocProvider<DoctorProfileCubit>.value(
           value: _profileCubit,
-          child: BlocProvider<DoctorNavigationCubit>(
-            create: (context) => DoctorNavigationCubit(),
-            child: BlocBuilder<DoctorNavigationCubit, int>(
-              builder: (context, currentIndex) {
-                return Scaffold(
-                  backgroundColor: const Color(0xFFF8FAFC),
-                  body: SafeArea(
-                    bottom: false,
-                    child: IndexedStack(
-                      index: currentIndex,
-                      children: _tabs,
+          child: BlocProvider<AgendaCubit>.value(
+            value: _agendaCubit,
+            child: BlocProvider<DoctorNavigationCubit>(
+              create: (context) => DoctorNavigationCubit(),
+              child: BlocBuilder<DoctorNavigationCubit, int>(
+                builder: (context, currentIndex) {
+                  return Scaffold(
+                    backgroundColor: const Color(0xFFF8FAFC),
+                    body: SafeArea(
+                      bottom: false,
+                      child: IndexedStack(
+                        index: currentIndex,
+                        children: _tabs,
+                      ),
                     ),
-                  ),
-                  bottomNavigationBar: _buildBottomNavigationBar(
-                    context,
-                    currentIndex,
-                  ),
-                );
-              },
+                    bottomNavigationBar: _buildBottomNavigationBar(
+                      context,
+                      currentIndex,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
