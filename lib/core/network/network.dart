@@ -303,7 +303,9 @@ class CurlInterceptor extends Interceptor {
   void _printLog(String message) {
     const int chunkSize = 800;
     if (message.length <= chunkSize) {
-      print(message);
+      if (kDebugMode) {
+        print(message);
+      }
       return;
     }
 
@@ -311,10 +313,14 @@ class CurlInterceptor extends Interceptor {
     while (startIndex < message.length) {
       int endIndex = startIndex + chunkSize;
       if (endIndex >= message.length) {
-        print(message.substring(startIndex));
+        if (kDebugMode) {
+          print(message.substring(startIndex));
+        }
         break;
       } else {
-        print('${message.substring(startIndex, endIndex)} \\');
+        if (kDebugMode) {
+          print('${message.substring(startIndex, endIndex)} \\');
+        }
       }
       startIndex = endIndex;
     }

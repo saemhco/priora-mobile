@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/controller/login_controller.dart';
-import 'package:priora/features/shared/auth/presentation/widgets/google_button.dart';
 
 class LoginForm extends StatelessWidget {
   final LoginController controller;
@@ -186,34 +185,6 @@ class LoginForm extends StatelessWidget {
                           ],
                         ),
                 ),
-              ),
-              const SizedBox(height: 24),
-
-              // Divider "O ingresa con"
-              const Row(
-                children: [
-                  Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      'O ingresa con',
-                      style: TextStyle(
-                        color: Color(0xFF94A3B8),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Google Button
-              GoogleButton(
-                onTap: () => isLoading
-                    ? null
-                    : () => controller.handleGoogleLogin(context, isLoading),
               ),
               const SizedBox(height: 24),
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/controller/register_controller.dart';
-import 'package:priora/features/shared/auth/presentation/widgets/google_button.dart';
 
 class RegisterForm extends StatelessWidget {
   final RegisterController controller;
@@ -207,35 +206,6 @@ class RegisterForm extends StatelessWidget {
                         ),
                       ),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Divider "o regístrate con"
-            const Row(
-              children: [
-                Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'o regístrate con',
-                    style: TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                Expanded(child: Divider(color: Color(0xFFE2E8F0))),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Google Register Button
-            GoogleButton(
-              onTap: () => isLoading
-                  ? null
-                  : () => controller.handleGoogleRegister(context, isLoading),
-              text: 'Continuar con Google',
             ),
             const SizedBox(height: 24),
 

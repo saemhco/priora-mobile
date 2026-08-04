@@ -437,8 +437,10 @@ class _CreateBlockScreenState extends State<CreateBlockScreen> {
         child: Row(
           children: [
             Radio<String>(
-              value: value,
+              value: value, 
+              // ignore: deprecated_member_use
               groupValue: groupValue,
+              // ignore: deprecated_member_use
               onChanged: onChanged,
               activeColor: const Color(0xFF0256C2),
             ),
@@ -644,7 +646,7 @@ class _CreateBlockScreenState extends State<CreateBlockScreen> {
     final minute = parts[1];
     final period = hour >= 12 ? 'PM' : 'AM';
     final hour12 = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    return '${hour12}:$minute $period';
+    return '$hour12:$minute $period';
   }
 
   Widget _buildMeetingTypeSelector() {
@@ -768,7 +770,9 @@ class _CreateBlockScreenState extends State<CreateBlockScreen> {
                       ),
                       Radio<String>(
                         value: place.id,
+                        // ignore: deprecated_member_use
                         groupValue: _selectedPlace?.id,
+                        // ignore: deprecated_member_use
                         onChanged: (v) {
                           if (v != null) {
                             setState(() => _selectedPlace = place);

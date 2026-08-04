@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:priora/features/patient/appointments/data/models/doctor_model.dart';
 import 'package:priora/features/patient/appointments/data/appointments_repository.dart';
 import 'package:priora/features/patient/appointments/data/appointments_service.dart';
@@ -54,9 +54,9 @@ class AppointmentsController extends ChangeNotifier {
 
   AppointmentsController({
     required this._repository,
-    required TriageRepository triageRepository,
+    required this._triageRepository,
     required this.accessToken,
-  }) : _triageRepository = triageRepository {
+  }) {
     fetchSpecialties();
     fetchMyAppointments();
   }
@@ -114,7 +114,9 @@ class AppointmentsController extends ChangeNotifier {
       specialties = ['Todos', ...list];
       notifyListeners();
     } catch (e) {
-      print('Error fetching specialties: $e');
+      if (kDebugMode) {
+        print('Error fetching specialties: $e');
+      }
     }
   }
 
@@ -162,7 +164,9 @@ class AppointmentsController extends ChangeNotifier {
       isLoadingMyAppointments = false;
       notifyListeners();
     } catch (e) {
-      print('Error fetching my appointments: $e');
+      if (kDebugMode) {
+        print('Error fetching my appointments: $e');
+      }
       isLoadingMyAppointments = false;
       notifyListeners();
     }

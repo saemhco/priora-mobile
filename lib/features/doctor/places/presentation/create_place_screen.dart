@@ -459,9 +459,13 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
             children: [
               Icon(icon, color: const Color(0xFF64748B), size: 20),
               const SizedBox(width: 12),
-              Text(
-                hint,
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+              Expanded(
+                child: Text(
+                  hint,
+                  style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               ),
             ],
           ),
@@ -476,9 +480,13 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
                       children: [
                         Icon(icon, color: const Color(0xFF64748B), size: 20),
                         const SizedBox(width: 12),
-                        const Text(
-                          'Seleccione Departamento primero',
-                          style: TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+                        const Expanded(
+                          child: Text(
+                            'Seleccione Departamento primero',
+                            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
                       ],
                     ),
@@ -491,7 +499,13 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
                       children: [
                         Icon(icon, color: const Color(0xFF64748B), size: 20),
                         const SizedBox(width: 12),
-                        Text(item),
+                        Expanded(
+                          child: Text(
+                            item,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
                       ],
                     ),
                   );

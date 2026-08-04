@@ -8,9 +8,12 @@ import 'package:priora/features/doctor/appointments/controller/doctor_appointmen
 import 'package:priora/features/doctor/appointments/controller/doctor_appointments_state.dart';
 import 'package:priora/features/doctor/appointments/data/models/doctor_appointment_model.dart';
 import 'package:priora/features/doctor/navigation/controller/doctor_navigation_controller.dart';
+import 'package:priora/features/doctor/profile/controller/doctor_profile_cubit.dart';
+import 'package:priora/features/doctor/profile/controller/doctor_profile_state.dart';
 import 'package:priora/features/doctor/places/controller/places_cubit.dart';
 import 'package:priora/features/doctor/places/controller/places_state.dart';
 import 'package:priora/features/doctor/places/data/models/place_model.dart';
+import 'package:priora/features/doctor/agenda/presentation/widgets/agenda_skeletons.dart';
 import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 import 'package:priora/features/shared/auth/data/auth_state.dart';
 
@@ -249,57 +252,41 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
             fontSize: 22,
           ),
         ),
-        BlocBuilder<AuthBloc, AuthState>(
+        BlocBuilder<DoctorProfileCubit, DoctorProfileState>(
           builder: (context, state) {
-            String? photoUrl;
-            if (state is AuthAuthenticated) {
-              photoUrl = state.profilePhotoUrl;
-            }
+            final photoUrl = state.profile?.profilePhotoUrl;
             final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Stack(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.notifications_none_rounded,
-                        color: _MeetingTypeTheme.virtual.primary,
-                        size: 28,
-                      ),
-                      onPressed: () {},
-                    ),
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Colors.redAccent,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
+            // Al presionar el avatar se navega al tab de Perfil
+            return GestureDetector(
+              onTap: () =>
+                  context.read<DoctorNavigationCubit>().changeIndex(3),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
                 ),
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFE2E8F0), width: 2),
-                  ),
-                  child: ClipOval(
-                    child: hasPhoto
-                        ? Image.network(photoUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.person, color: Color(0xFF64748B)))
-                        : Container(
-                            color: const Color(0xFFE2E8F0),
-                            child: const Icon(Icons.person, color: Color(0xFF64748B), size: 24),
+                child: ClipOval(
+                  child: hasPhoto
+                      ? Image.network(
+                          photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Icon(
+                            Icons.person,
+                            color: Color(0xFF64748B),
                           ),
-                  ),
+                        )
+                      : Container(
+                          color: const Color(0xFFE2E8F0),
+                          child: const Icon(
+                            Icons.person,
+                            color: Color(0xFF64748B),
+                            size: 24,
+                          ),
+                        ),
                 ),
-              ],
+              ),
             );
           },
         ),
@@ -382,18 +369,8 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
                 ),
-                child: Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Color(0xFF0256C2),
-                    ),
-                  ),
-                ),
+                child: const TodayAppointmentsSkeleton(),
               )
             else if (todayAppointments.isEmpty)
               Container(
@@ -678,6 +655,10 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
     IconData? icon,
     bool isLoading = false,
   }) {
+    if (isLoading) {
+      return const LocationSelectorSkeleton();
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -688,14 +669,7 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
       ),
       child: Row(
         children: [
-          if (isLoading)
-            const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF0256C2)),
-            )
-          else
-            Icon(icon ?? Icons.location_on_outlined, color: const Color(0xFF64748B), size: 20),
+          Icon(icon ?? Icons.location_on_outlined, color: const Color(0xFF64748B), size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -723,8 +697,7 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
               ],
             ),
           ),
-          if (!isLoading)
-            const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
+          const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B)),
         ],
       ),
     );
@@ -1001,12 +974,7 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
 
   Widget _buildCalendar() {
     if (_isLoadingBlocks && _hours.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: CircularProgressIndicator(color: _MeetingTypeTheme.virtual.primary),
-        ),
-      );
+      return const AgendaCalendarSkeleton();
     }
 
     if (_hours.isEmpty && !_isLoadingBlocks) {

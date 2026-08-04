@@ -51,7 +51,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFF0C6159), // Dark cian/teal for text/outline
           side: const BorderSide(color: prioraCyan, width: 1.5),
-          backgroundColor: prioraLightCyan.withOpacity(0.3),
+          backgroundColor: prioraLightCyan.withValues(alpha: 0.3),
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),

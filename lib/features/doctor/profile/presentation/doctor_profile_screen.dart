@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/core/di/injection.dart';
 import 'package:priora/features/doctor/appointments/controller/doctor_appointments_cubit.dart';
 import 'package:priora/features/doctor/appointments/controller/doctor_appointments_state.dart';
 import 'package:priora/features/doctor/places/controller/places_cubit.dart';
 import 'package:priora/features/doctor/places/controller/places_state.dart';
 import 'package:priora/features/doctor/places/data/models/place_model.dart';
-import 'package:priora/features/doctor/profile/data/doctor_profile_service.dart';
+import 'package:priora/features/doctor/profile/controller/doctor_profile_cubit.dart';
+import 'package:priora/features/doctor/profile/controller/doctor_profile_state.dart';
 import 'package:priora/features/doctor/profile/data/models/doctor_profile_model.dart';
 import 'package:priora/features/patient/profile/presentation/widgets/logout_button.dart';
 import 'package:priora/features/shared/auth/data/auth_bloc.dart';
@@ -22,49 +22,20 @@ class DoctorProfileScreen extends StatefulWidget {
 }
 
 class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
-  DoctorProfileModel? _profile;
-  bool _isLoading = true;
-  String? _error;
-
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadPlaces();
   }
 
-  Future<void> _loadData() async {
+  /// Carga los lugares de atención (GET /places/me). El perfil del
+  /// profesional lo carga el DoctorProfileCubit compartido (una sola llamada).
+  void _loadPlaces() {
     final authState = context.read<AuthBloc>().state;
-    if (authState is! AuthAuthenticated) return;
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final placesCubit = context.read<PlacesCubit>();
-
-    try {
-      final profileService = getIt<DoctorProfileService>();
-      final profile = await profileService.getProfessionalProfile(
+    if (authState is AuthAuthenticated) {
+      context.read<PlacesCubit>().loadPlaces(
         accessToken: authState.accessToken,
       );
-
-      // Lugares de atención (GET /places/me)
-      placesCubit.loadPlaces(accessToken: authState.accessToken);
-
-      // Las métricas de citas se calculan desde el estado compartido del
-      // DoctorAppointmentsCubit (una sola llamada a GET /appointments/doctor).
-      if (!mounted) return;
-      setState(() {
-        _profile = profile;
-      });
-    } catch (e) {
-      debugPrint('Error loading profile: $e');
-      if (mounted) {
-        setState(() => _error = 'No se pudo cargar el perfil');
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -73,36 +44,44 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: SafeArea(
-        child: _isLoading
-            ? const Center(
+        child: BlocBuilder<DoctorProfileCubit, DoctorProfileState>(
+          builder: (context, state) {
+            if (state.isLoading && state.profile == null) {
+              return const Center(
                 child: CircularProgressIndicator(color: Color(0xFF0256C2)),
-              )
-            : _profile == null || _error != null
-                ? _buildError()
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 12),
-                        _buildProfileHeader(_profile!),
-                        const SizedBox(height: 20),
-                        _buildEditButton(context),
-                        const SizedBox(height: 20),
-                        _buildBioSection(_profile!),
-                        const SizedBox(height: 16),
-                        _buildContactSection(_profile!),
-                        const SizedBox(height: 16),
-                        _buildPlacesSection(),
-                        const SizedBox(height: 16),
-                        _buildWeeklySummary(_profile!),
-                        const SizedBox(height: 16),
-                        _buildProgressCard(_profile!),
-                        const SizedBox(height: 24),
-                        _buildLogoutButton(context),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
+              );
+            }
+            if (state.error != null || state.profile == null) {
+              return _buildError();
+            }
+
+            final profile = state.profile!;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  _buildProfileHeader(profile),
+                  const SizedBox(height: 20),
+                  _buildEditButton(context),
+                  const SizedBox(height: 20),
+                  _buildBioSection(profile),
+                  const SizedBox(height: 16),
+                  _buildContactSection(profile),
+                  const SizedBox(height: 16),
+                  _buildPlacesSection(),
+                  const SizedBox(height: 16),
+                  _buildWeeklySummary(profile),
+                  const SizedBox(height: 16),
+                  _buildProgressCard(profile),
+                  const SizedBox(height: 24),
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -118,7 +97,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                 size: 44, color: Color(0xFFCBD5E1)),
             const SizedBox(height: 12),
             Text(
-              _error ?? 'Error al cargar el perfil',
+              context.read<DoctorProfileCubit>().state.error ??
+                  'Error al cargar el perfil',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF64748B),
@@ -128,7 +108,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loadData,
+              onPressed: () =>
+                  context.read<DoctorProfileCubit>().loadProfile(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0256C2),
                 foregroundColor: Colors.white,
