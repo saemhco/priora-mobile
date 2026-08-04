@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/data/auth_state.dart';
 import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 
@@ -8,11 +7,7 @@ class HomeHeader extends StatelessWidget {
   final VoidCallback? onProfileTap;
   final VoidCallback? onNotificationsTap;
 
-  const HomeHeader({
-    super.key,
-    this.onProfileTap,
-    this.onNotificationsTap,
-  });
+  const HomeHeader({super.key, this.onProfileTap, this.onNotificationsTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +16,14 @@ class HomeHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Text(
+          'Priora',
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: const Color(0xFF0256C2),
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
         // Dynamic Avatar from API - taps to Profile tab
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
@@ -45,7 +48,10 @@ class HomeHeader extends StatelessWidget {
                           photoUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.person, color: Color(0xFF64748B)),
+                              const Icon(
+                                Icons.person,
+                                color: Color(0xFF64748B),
+                              ),
                         )
                       : Container(
                           color: const Color(0xFFE2E8F0),
@@ -61,16 +67,9 @@ class HomeHeader extends StatelessWidget {
           },
         ),
         // Priora Title
-        Text(
-          'Priora',
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: const Color(0xFF0256C2),
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-          ),
-        ),
+
         // Notifications bell with mini active badge
-        Stack(
+        /*Stack(
           children: [
             IconButton(
               icon: const Icon(
@@ -93,7 +92,7 @@ class HomeHeader extends StatelessWidget {
               ),
             ),
           ],
-        ),
+        ),*/
       ],
     );
   }

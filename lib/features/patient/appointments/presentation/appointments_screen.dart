@@ -4,7 +4,6 @@ import 'package:priora/features/patient/appointments/controller/appointments_con
 import 'package:priora/features/patient/appointments/presentation/widgets/appointment_search_bar.dart';
 import 'package:priora/features/patient/appointments/presentation/widgets/specialty_filter_chips.dart';
 import 'package:priora/features/patient/appointments/presentation/widgets/doctor_card.dart';
-import 'package:priora/features/patient/appointments/presentation/widgets/notification_banner.dart';
 import 'package:priora/features/shared/auth/data/auth_bloc.dart';
 import 'package:priora/features/shared/auth/data/auth_state.dart';
 import 'package:priora/features/patient/appointments/data/appointments_repository.dart';
@@ -74,11 +73,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.history_rounded,
-            color: Color(0xFF64748B),
-            size: 20,
-          ),
+          const Icon(Icons.history_rounded, color: Color(0xFF64748B), size: 20),
           const SizedBox(width: 10),
           const Expanded(
             child: Column(
@@ -95,10 +90,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                 SizedBox(height: 2),
                 Text(
                   'Actívalo para ver citas que ya se realizaron',
-                  style: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                 ),
               ],
             ),
@@ -145,10 +137,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
           Text(
             'Activa "Mostrar citas pasadas" para ver el historial.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF94A3B8),
-            ),
+            style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
           ),
         ],
       ),
@@ -441,7 +430,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                                               );
                                             },
                                             onViewCalendar: () {
-                                              ScaffoldMessenger.of(
+                                              /*ScaffoldMessenger.of(
                                                 context,
                                               ).showSnackBar(
                                                 SnackBar(
@@ -451,12 +440,12 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                                                   behavior:
                                                       SnackBarBehavior.floating,
                                                 ),
-                                              );
+                                              );*/
                                             },
                                           ),
                                         ),
                                       const SizedBox(height: 16),
-                                      NotificationBanner(
+                                      /*  NotificationBanner(
                                         enabled:
                                             _controller!.notificationsEnabled,
                                         onTap: () {
@@ -481,7 +470,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                                             ),
                                           );
                                         },
-                                      ),
+                                      ),*/
                                       const SizedBox(height: 20),
                                     ],
                                   ),
