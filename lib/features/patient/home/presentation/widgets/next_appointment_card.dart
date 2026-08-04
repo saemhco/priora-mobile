@@ -157,28 +157,51 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
         }
 
         final appointments = snapshot.data ?? [];
-        
-        // Filter active upcoming appointments
+
+        // Excluir citas canceladas
         final activeAppointments = appointments.where((app) {
           final status = app['status']?.toString().toUpperCase() ?? '';
-          if (status == 'CANCELLED') return false;
+          return status != 'CANCELLED' && status != 'CANCELED';
+        }).toList();
 
-          final datetimeStr = app['datetime']?.toString() ?? '';
-          final dt = DateTime.tryParse(datetimeStr);
+        // Separar citas pendientes (no completadas) de las completadas
+        final pendingAppointments = activeAppointments.where((app) {
+          final status = app['status']?.toString().toUpperCase() ?? '';
+          return status != 'COMPLETED';
+        }).toList()
+          ..sort((a, b) {
+            final dtA = DateTime.tryParse(a['datetime']?.toString() ?? '') ?? DateTime.now();
+            final dtB = DateTime.tryParse(b['datetime']?.toString() ?? '') ?? DateTime.now();
+            return dtA.compareTo(dtB);
+          });
+
+        // De las pendientes, quedarse con las que aún son válidas
+        // (no pasaron hace más de 2 horas)
+        final upcomingAppointments = pendingAppointments.where((app) {
+          final dt = DateTime.tryParse(app['datetime']?.toString() ?? '');
           if (dt == null) return false;
-
-          // Keep appointments that are not older than 2 hours
           return dt.isAfter(DateTime.now().subtract(const Duration(hours: 2)));
         }).toList();
 
-        // Sort by datetime ascending
-        activeAppointments.sort((a, b) {
-          final dtA = DateTime.tryParse(a['datetime']?.toString() ?? '') ?? DateTime.now();
-          final dtB = DateTime.tryParse(b['datetime']?.toString() ?? '') ?? DateTime.now();
-          return dtA.compareTo(dtB);
-        });
+        // Citas completadas (más recientes primero) como respaldo
+        final completedAppointments = activeAppointments.where((app) {
+          final status = app['status']?.toString().toUpperCase() ?? '';
+          return status == 'COMPLETED';
+        }).toList()
+          ..sort((a, b) {
+            final dtA = DateTime.tryParse(a['datetime']?.toString() ?? '') ?? DateTime.now();
+            final dtB = DateTime.tryParse(b['datetime']?.toString() ?? '') ?? DateTime.now();
+            return dtB.compareTo(dtA);
+          });
 
-        if (activeAppointments.isEmpty) {
+        // Priorizar pendientes; si no hay, mostrar la completada más reciente
+        final nextApp = upcomingAppointments.isNotEmpty
+            ? upcomingAppointments.first
+            : (completedAppointments.isNotEmpty
+                ? completedAppointments.first
+                : null);
+
+        if (nextApp == null) {
           // No upcoming appointments: Render a friendly message placeholder
           return Container(
             width: double.infinity,
@@ -237,7 +260,7 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
         }
 
         // Get the closest upcoming appointment
-        final nextApp = activeAppointments.first;
+        final isCompleted = (nextApp['status']?.toString().toUpperCase() ?? '') == 'COMPLETED';
         final docData = nextApp['doctor'] ?? nextApp['professional'] ?? nextApp['professionalProfile'];
         final docName = docData != null
             ? '${docData['firstName'] ?? docData['name'] ?? ''} ${docData['lastName'] ?? ''}'.trim()
@@ -280,9 +303,9 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                       color: const Color(0xFFE0F7F6),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Text(
-                      'PRÓXIMA CITA',
-                      style: TextStyle(
+                    child: Text(
+                      isCompleted ? 'ÚLTIMA CITA' : 'PRÓXIMA CITA',
+                      style: const TextStyle(
                         color: Color(0xFF00CBB8),
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
@@ -298,7 +321,7 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        nextApp['status']?.toString() ?? 'Confirmada',
+                        isCompleted ? 'Completada' : (nextApp['status']?.toString() ?? 'Confirmada'),
                         style: const TextStyle(
                           color: Color(0xFF00CBB8),
                           fontSize: 13,
