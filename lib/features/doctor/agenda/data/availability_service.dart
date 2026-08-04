@@ -46,7 +46,8 @@ class AvailabilityService {
       '/availability/weekly/$scheduleId',
       options: Options(headers: {'Authorization': 'Bearer $accessToken'}),
     );
-    if (response.statusCode != 200) {
+    final status = response.statusCode;
+    if (status == null || status < 200 || status >= 300) {
       throw Exception('Error al eliminar bloque');
     }
   }

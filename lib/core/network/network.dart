@@ -97,9 +97,26 @@ class AuthInterceptor extends Interceptor {
           final retryResponse = await dio.fetch(err.requestOptions);
           handler.resolve(retryResponse);
         } catch (retryError) {
-          // If the retry also fails, logout
-          await _clearTokensAndLogout();
-          _rejectPendingRequests(err);
+          // Si el reintento también falla por autenticación (401) → logout.
+          // Si falla por error de negocio (400/403/404…) → propagar el error
+          // al caller para que muestre el mensaje, sin desloguear.
+          final retryStatus =
+              retryError is DioException
+                  ? retryError.response?.statusCode
+                  : null;
+          if (retryStatus == 401) {
+            await _clearTokensAndLogout();
+            _rejectPendingRequests(err);
+            return;
+          }
+          _rejectPendingRequests(
+            retryError is DioException ? retryError : err,
+          );
+          if (retryError is DioException) {
+            handler.next(retryError);
+          } else {
+            handler.next(err);
+          }
           return;
         }
 
