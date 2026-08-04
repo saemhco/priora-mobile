@@ -20,13 +20,22 @@ class DoctorCard extends StatefulWidget {
 class _DoctorCardState extends State<DoctorCard> {
   bool _isExpanded = false;
 
-  Map<String, List<String>> _groupSlotsByDate(List<String> originalSlots) {
+  Map<String, List<String>> _groupSlotsByDate(
+    List<Map<String, dynamic>> rawSlots,
+  ) {
     final Map<String, List<String>> grouped = {};
     final now = DateTime.now();
 
-    for (var s in originalSlots) {
+    for (final slot in rawSlots) {
       try {
-        final dt = DateTime.parse(s).toLocal();
+        final startTime = slot['startTime']?.toString();
+        if (startTime == null || startTime.isEmpty) continue;
+        // Preferir el campo date tal como lo envía el backend
+        final dateStr = slot['date']?.toString();
+        final dt = dateStr != null && dateStr.isNotEmpty
+            ? DateTime.parse(dateStr)
+            : DateTime.parse(slot['datetime'].toString()).toLocal();
+
         // Format date label
         String dateLabel = '';
         if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
@@ -39,11 +48,7 @@ class _DoctorCardState extends State<DoctorCard> {
           dateLabel = _formatDayMonth(dt);
         }
 
-        final hour = dt.hour.toString().padLeft(2, '0');
-        final min = dt.minute.toString().padLeft(2, '0');
-        final formattedHour = '$hour:$min';
-
-        grouped.putIfAbsent(dateLabel, () => []).add(formattedHour);
+        grouped.putIfAbsent(dateLabel, () => []).add(startTime);
       } catch (_) {}
     }
     return grouped;
@@ -169,7 +174,7 @@ class _DoctorCardState extends State<DoctorCard> {
 
   @override
   Widget build(BuildContext context) {
-    final groupedSlots = _groupSlotsByDate(widget.doctor.originalSlots);
+    final groupedSlots = _groupSlotsByDate(widget.doctor.rawSlots);
     final hasMoreDates = groupedSlots.keys.length > 1;
 
     return Container(

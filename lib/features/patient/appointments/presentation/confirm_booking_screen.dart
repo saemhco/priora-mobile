@@ -49,9 +49,34 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     super.dispose();
   }
 
-  String _formatSlotDate(String originalSlot) {
-    // Encuentra el datetime ISO completo que coincide con la hora del slot
-    final fullDateStr = widget.doctor.originalSlotForHour(originalSlot);
+  String _formatSlotDate(String slotHour) {
+    // Preferir el campo date del slot tal como lo envía el backend
+    final dateStr = widget.doctor.dateForHour(slotHour);
+    if (dateStr != null && dateStr.isNotEmpty) {
+      try {
+        final dt = DateTime.parse(dateStr);
+        final months = [
+          'Ene',
+          'Feb',
+          'Mar',
+          'Abr',
+          'May',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dic',
+        ];
+        return '${dt.day} ${months[dt.month - 1]}, ${dt.year}';
+      } catch (_) {
+        return dateStr;
+      }
+    }
+
+    // Fallback: el datetime ISO completo que coincide con la hora del slot
+    final fullDateStr = widget.doctor.originalSlotForHour(slotHour);
     if (fullDateStr.isEmpty) return 'Hoy';
 
     try {
@@ -605,7 +630,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${widget.slot} AM',
+                              widget.slot,
                               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
                             ),
                           ],
@@ -945,15 +970,15 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 6),
-                          Text(
-                            '${widget.slot} AM',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF0F172A),
+                            const SizedBox(height: 6),
+                            Text(
+                              widget.slot,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F172A),
+                              ),
                             ),
-                          ),
                         ],
                       ),
                     ),

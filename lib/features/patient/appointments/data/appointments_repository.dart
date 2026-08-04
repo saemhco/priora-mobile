@@ -97,21 +97,39 @@ class AppointmentsRepository {
 
       final rawSlots = item['slots'] ?? item['timeSlots'] ?? [];
       List<String> slots = [];
+      List<String> formattedSlots = [];
       List<Map<String, dynamic>> rawSlotsList = [];
       if (rawSlots is List) {
-        slots = rawSlots.map((s) {
-          if (s is Map && s['datetime'] != null) {
-            rawSlotsList.add(Map<String, dynamic>.from(s));
-            return s['datetime'].toString();
+        for (final s in rawSlots) {
+          if (s is Map) {
+            final map = Map<String, dynamic>.from(s);
+            final datetimeStr = map['datetime']?.toString();
+            if (datetimeStr == null || datetimeStr.isEmpty) continue;
+            slots.add(datetimeStr);
+            rawSlotsList.add(map);
+            // El backend ya envía startTime/date en hora local del médico,
+            // usarlos evita que .toLocal() del datetime UTC desvíe la hora.
+            final startTime = map['startTime']?.toString();
+            formattedSlots.add(
+              startTime != null && startTime.isNotEmpty
+                  ? startTime
+                  : _formatIsoTime(datetimeStr),
+            );
+          } else {
+            final str = s.toString();
+            slots.add(str);
+            formattedSlots.add(_formatIsoTime(str));
           }
-          return s.toString();
-        }).toList();
+        }
       }
 
       String nextDate = 'Siguiente cita';
-      if (slots.isNotEmpty) {
+      if (rawSlotsList.isNotEmpty) {
         try {
-          final dt = DateTime.parse(slots.first);
+          final dateStr = rawSlotsList.first['date']?.toString() ?? '';
+          final dt = dateStr.isNotEmpty
+              ? DateTime.parse(dateStr)
+              : DateTime.parse(slots.first).toLocal();
           final now = DateTime.now();
           if (dt.day == now.day &&
               dt.month == now.month &&
@@ -125,19 +143,6 @@ class AppointmentsRepository {
             nextDate = _formatDayMonth(dt);
           }
         } catch (_) {}
-      }
-
-      List<String> formattedSlots = [];
-      for (var s in slots) {
-        try {
-          // Hora local para que sea consistente con el resto de la app
-          final dt = DateTime.parse(s).toLocal();
-          final hour = dt.hour.toString().padLeft(2, '0');
-          final min = dt.minute.toString().padLeft(2, '0');
-          formattedSlots.add('$hour:$min');
-        } catch (_) {
-          formattedSlots.add(s);
-        }
       }
 
       return DoctorModel(
@@ -244,6 +249,17 @@ class AppointmentsRepository {
         'status': item['status']?.toString() ?? 'Reservada',
       };
     }).toList();
+  }
+
+  String _formatIsoTime(String iso) {
+    try {
+      final dt = DateTime.parse(iso).toLocal();
+      final hour = dt.hour.toString().padLeft(2, '0');
+      final min = dt.minute.toString().padLeft(2, '0');
+      return '$hour:$min';
+    } catch (_) {
+      return iso;
+    }
   }
 
   String _formatDayMonth(DateTime dt) {

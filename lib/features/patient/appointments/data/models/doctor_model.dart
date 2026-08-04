@@ -33,6 +33,14 @@ class DoctorModel {
   /// con la hora dada (formato HH:mm), o null si no se encuentra.
   String? meetingTypeForSlot(String hour) {
     for (final slot in rawSlots) {
+      // Preferir startTime tal como lo envía el backend
+      final startTime = slot['startTime']?.toString();
+      if (startTime != null && startTime.isNotEmpty) {
+        if (startTime == hour) {
+          return slot['meetingType']?.toString().toUpperCase();
+        }
+        continue;
+      }
       final datetimeStr = slot['datetime']?.toString() ?? '';
       if (datetimeStr.isEmpty) continue;
       try {
@@ -50,20 +58,55 @@ class DoctorModel {
   }
 
   /// Devuelve el datetime ISO completo del slot que coincide con la hora dada
-  /// (formato HH:mm en hora local), o una cadena vacía si no se encuentra.
+  /// (formato HH:mm), o una cadena vacía si no se encuentra.
   String originalSlotForHour(String hour) {
-    for (final slot in originalSlots) {
+    for (var i = 0; i < rawSlots.length; i++) {
+      final slot = rawSlots[i];
+      // Preferir startTime tal como lo envía el backend
+      final startTime = slot['startTime']?.toString();
+      if (startTime != null && startTime.isNotEmpty) {
+        if (startTime == hour && i < originalSlots.length) {
+          return originalSlots[i];
+        }
+        continue;
+      }
+      if (i >= originalSlots.length) continue;
       try {
-        final dt = DateTime.parse(slot).toLocal();
+        final dt = DateTime.parse(originalSlots[i]).toLocal();
         final h = dt.hour.toString().padLeft(2, '0');
         final m = dt.minute.toString().padLeft(2, '0');
         if ('$h:$m' == hour) {
-          return slot;
+          return originalSlots[i];
         }
       } catch (_) {
         // Ignorar slots con fecha inválida
       }
     }
     return '';
+  }
+
+  /// Devuelve la fecha (YYYY-MM-DD) del slot que coincide con la hora dada,
+  /// o null si no se encuentra.
+  String? dateForHour(String hour) {
+    for (final slot in rawSlots) {
+      final startTime = slot['startTime']?.toString();
+      if (startTime != null && startTime.isNotEmpty) {
+        if (startTime == hour) {
+          return slot['date']?.toString();
+        }
+        continue;
+      }
+      final datetimeStr = slot['datetime']?.toString() ?? '';
+      if (datetimeStr.isEmpty) continue;
+      try {
+        final dt = DateTime.parse(datetimeStr).toLocal();
+        final h = dt.hour.toString().padLeft(2, '0');
+        final m = dt.minute.toString().padLeft(2, '0');
+        if ('$h:$m' == hour) {
+          return slot['date']?.toString();
+        }
+      } catch (_) {}
+    }
+    return null;
   }
 }

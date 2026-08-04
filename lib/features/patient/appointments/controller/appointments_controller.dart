@@ -197,6 +197,10 @@ class AppointmentsController extends ChangeNotifier {
     // Lugar del slot presencial (si aplica)
     String? placeId;
     final matchingRawSlot = doctor.rawSlots.firstWhere((s) {
+      final startTime = s['startTime']?.toString();
+      if (startTime != null && startTime.isNotEmpty) {
+        return startTime == timeSlot;
+      }
       final datetimeStr = s['datetime']?.toString() ?? '';
       if (datetimeStr.isEmpty) return false;
       try {
