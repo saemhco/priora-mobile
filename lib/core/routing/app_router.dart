@@ -13,6 +13,7 @@ import 'package:priora/features/patient/profile/presentation/map_picker_screen.d
 import 'package:priora/features/patient/home/presentation/notifications_screen.dart';
 import 'package:priora/features/doctor/agenda/presentation/create_block_screen.dart';
 import 'package:priora/features/doctor/places/presentation/create_place_screen.dart';
+import 'package:priora/features/doctor/profile/presentation/edit_doctor_profile_screen.dart';
 
 CustomTransitionPage<T> _buildTransitionPage<T>({
   required LocalKey key,
@@ -143,6 +144,13 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => _buildTransitionPage(
         key: state.pageKey,
         child: const CreateBlockScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/edit-doctor-profile',
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: EditDoctorProfileScreen(cubit: state.extra as dynamic),
       ),
     ),
   ],

@@ -253,7 +253,10 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton.icon(
-        onPressed: () {},
+        onPressed: () => context.push(
+          '/edit-doctor-profile',
+          extra: context.read<DoctorProfileCubit>(),
+        ),
         icon: const Icon(Icons.edit_rounded, size: 18, color: Color(0xFF0256C2)),
         label: const Text('Editar Perfil'),
         style: OutlinedButton.styleFrom(
