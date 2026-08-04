@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:priora/core/di/injection.dart';
 import 'package:priora/features/doctor/agenda/data/availability_service.dart';
 import 'package:priora/features/doctor/agenda/data/models/weekly_schedule_model.dart';
+import 'package:priora/features/doctor/agenda/controller/agenda_cubit.dart';
+import 'package:priora/features/doctor/agenda/presentation/widgets/delete_block_sheet.dart';
 import 'package:priora/features/doctor/appointments/controller/doctor_appointments_cubit.dart';
 import 'package:priora/features/doctor/appointments/controller/doctor_appointments_state.dart';
 import 'package:priora/features/doctor/appointments/data/models/doctor_appointment_model.dart';
@@ -622,6 +624,10 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
             if (_isVirtualSelected) {
               label = 'Virtual';
               icon = Icons.videocam_rounded;
+            } else if (_selectedFilterId == null) {
+              label = 'Todos';
+              icon = Icons.public_rounded;
+              subtitle = 'Virtuales y presenciales';
             } else if (_selectedPlace != null) {
               label = _selectedPlace!.name;
               icon = Icons.local_hospital_rounded;
@@ -881,6 +887,54 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
     );
   }
 
+  Future<void> _openDeleteBlockSheet(BuildContext context) async {
+    if (_schedules.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No hay bloques para eliminar'),
+          backgroundColor: Color(0xFFEF4444),
+        ),
+      );
+      return;
+    }
+
+    final result = await showModalBottomSheet<DeleteBlockSheetResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => DeleteBlockSheet(blocks: _schedules),
+    );
+
+    if (result == null || !result.success || result.blockId == null) return;
+    if (!context.mounted) return;
+
+    final cubit = context.read<AgendaCubit>();
+    final deleteResult = await cubit.deleteBlock(result.blockId!);
+    if (!context.mounted) return;
+
+    if (deleteResult.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bloque eliminado correctamente'),
+          backgroundColor: Color(0xFF475569),
+        ),
+      );
+      await _loadBlocks();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            deleteResult.message ?? 'Error al eliminar el bloque',
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+        ),
+      );
+    }
+  }
+
   Widget _buildActionButtons() {
     return Row(
       children: [
@@ -909,7 +963,7 @@ class _DoctorAgendaScreenState extends State<DoctorAgendaScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: () => _openDeleteBlockSheet(context),
             icon: const Icon(Icons.delete_outline_rounded, size: 20),
             label: const Text('Eliminar'),
             style: OutlinedButton.styleFrom(
