@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -9,13 +10,12 @@ typedef TokenRefreshCallback =
 typedef LogoutCallback = void Function();
 
 class _PendingRequest {
-  final RequestOptions requestOptions;
-  final ErrorInterceptorHandler handler;
-
   _PendingRequest({
     required this.requestOptions,
     required this.handler,
   });
+  final RequestOptions requestOptions;
+  final ErrorInterceptorHandler handler;
 }
 
 class AuthInterceptor extends Interceptor {
@@ -57,24 +57,27 @@ class AuthInterceptor extends Interceptor {
       if (err.requestOptions.extra['isRetry'] == true) {
         await _clearTokensAndLogout();
       }
+
       return super.onError(err, handler);
     }
- 
 
     final prefs = await SharedPreferences.getInstance();
     final refreshToken = prefs.getString('refreshToken');
 
     if (refreshToken == null || refreshToken.isEmpty) {
       await _clearTokensAndLogout();
+
       return super.onError(err, handler);
     }
 
     // If we're already refreshing the token, queue this request
     if (_isRefreshing) {
-      _pendingRequests.add(_PendingRequest(
-        requestOptions: err.requestOptions,
-        handler: handler,
-      ));
+      _pendingRequests.add(
+        _PendingRequest(
+          requestOptions: err.requestOptions,
+          handler: handler,
+        ),
+      );
       return;
     }
 
@@ -89,21 +92,19 @@ class AuthInterceptor extends Interceptor {
         final newAccessToken = prefs.getString('accessToken') ?? '';
 
         // Retry the original request that triggered the refresh
-        err.requestOptions.headers['Authorization'] =
-            'Bearer $newAccessToken';
+        err.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
         err.requestOptions.extra['isRetry'] = true;
 
         try {
-          final retryResponse = await dio.fetch(err.requestOptions);
+          final retryResponse = await dio.fetch<dynamic>(err.requestOptions);
           handler.resolve(retryResponse);
         } catch (retryError) {
           // Si el reintento también falla por autenticación (401) → logout.
           // Si falla por error de negocio (400/403/404…) → propagar el error
           // al caller para que muestre el mensaje, sin desloguear.
-          final retryStatus =
-              retryError is DioException
-                  ? retryError.response?.statusCode
-                  : null;
+          final retryStatus = retryError is DioException
+              ? retryError.response?.statusCode
+              : null;
           if (retryStatus == 401) {
             await _clearTokensAndLogout();
             _rejectPendingRequests(err);
@@ -145,11 +146,10 @@ class AuthInterceptor extends Interceptor {
     _pendingRequests.clear();
 
     for (final pending in pendingList) {
-      pending.requestOptions.headers['Authorization'] =
-          'Bearer $newToken';
+      pending.requestOptions.headers['Authorization'] = 'Bearer $newToken';
       pending.requestOptions.extra['isRetry'] = true;
       try {
-        final response = await dio.fetch(pending.requestOptions);
+        final response = await dio.fetch<dynamic>(pending.requestOptions);
         pending.handler.resolve(response);
       } catch (e) {
         pending.handler.next(
@@ -181,31 +181,31 @@ class AuthInterceptor extends Interceptor {
         ),
       );
 
-      final response = await refreshDio.post(
+      final response = await refreshDio.post<Map<String, dynamic>>(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
-        final newAccessToken = data['accessToken'] as String?;
-        final newRefreshToken = data['refreshToken'] as String?;
+        if (data != null) {
+          final newAccessToken = data['accessToken'] as String?;
+          final newRefreshToken = data['refreshToken'] as String?;
 
-        if (newAccessToken == null || newAccessToken.isEmpty) {
-          return false;
+          if (newAccessToken == null || newAccessToken.isEmpty) {
+            return false;
+          }
+
+          final prefs = await SharedPreferences.getInstance();
+          // Save new tokens to SharedPreferences
+          await prefs.setString('accessToken', newAccessToken);
+          if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+            await prefs.setString('refreshToken', newRefreshToken);
+          }
+
+          return true;
         }
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('accessToken', newAccessToken);
-        if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-          await prefs.setString('refreshToken', newRefreshToken);
-        }
-
-        onTokenRefreshed?.call(
-          newAccessToken,
-          newRefreshToken ?? refreshToken,
-        );
-        return true;
+        return false;
       }
       return false;
     } catch (e) {
@@ -230,9 +230,6 @@ final dio =
     Dio(
         BaseOptions(
           baseUrl: dotenv.env['API_URL'] ?? 'https://api-priora.quipu.club',
-          connectTimeout: null,
-          receiveTimeout: null,
-          sendTimeout: null,
         ),
       )
       ..interceptors.add(AuthInterceptor())
@@ -318,7 +315,7 @@ class CurlInterceptor extends Interceptor {
   }
 
   void _printLog(String message) {
-    const int chunkSize = 800;
+    const chunkSize = 800;
     if (message.length <= chunkSize) {
       if (kDebugMode) {
         print(message);
@@ -326,9 +323,9 @@ class CurlInterceptor extends Interceptor {
       return;
     }
 
-    int startIndex = 0;
+    var startIndex = 0;
     while (startIndex < message.length) {
-      int endIndex = startIndex + chunkSize;
+      final endIndex = startIndex + chunkSize;
       if (endIndex >= message.length) {
         if (kDebugMode) {
           print(message.substring(startIndex));
@@ -344,7 +341,7 @@ class CurlInterceptor extends Interceptor {
   }
 
   String _toCurl(RequestOptions options) {
-    final List<String> components = ['curl -i --location'];
+    final components = <String>['curl -i --location'];
 
     // Method
     components.add('-X ${options.method}');
@@ -394,6 +391,6 @@ class CurlInterceptor extends Interceptor {
   }
 
   String _escapeShellArg(String arg) {
-    return "'${arg.replaceAll("'", "'\\''")}'";
+    return "'${arg.replaceAll("'", r"'\''")}'";
   }
 }

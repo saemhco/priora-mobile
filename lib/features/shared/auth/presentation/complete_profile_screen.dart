@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/controller/complete_profile_controller.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
-import 'package:priora/features/shared/auth/presentation/widgets/personal_info_section.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
+import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 import 'package:priora/features/shared/auth/presentation/widgets/demographics_section.dart';
 import 'package:priora/features/shared/auth/presentation/widgets/location_section.dart';
+import 'package:priora/features/shared/auth/presentation/widgets/personal_info_section.dart';
 import 'package:priora/features/shared/auth/presentation/widgets/submit_profile_button.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -79,8 +79,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 12.0,
+                  horizontal: 20,
+                  vertical: 12,
                 ),
                 child: Form(
                   key: _formKey,

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class NotificationBanner extends StatelessWidget {
-  final bool enabled;
-  final VoidCallback onTap;
 
   const NotificationBanner({
     required this.enabled,
     required this.onTap,
     super.key,
   });
+  final bool enabled;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,7 @@ class NotificationBanner extends StatelessWidget {
                 Text(
                   'Activa las notificaciones para avisarte cuando haya nuevas citas disponibles.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
+                    color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 13,
                     height: 1.4,
                   ),

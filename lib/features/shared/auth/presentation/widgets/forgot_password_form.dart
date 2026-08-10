@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/controller/forgot_password_controller.dart';
+import 'package:priora/features/shared/auth/presentation/controller/forgot_password_controller.dart';
 
 class ForgotPasswordForm extends StatelessWidget {
-  final ForgotPasswordController controller;
 
   const ForgotPasswordForm({
-    super.key,
-    required this.controller,
+    required this.controller, super.key,
   });
+  final ForgotPasswordController controller;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +35,7 @@ class ForgotPasswordForm extends StatelessWidget {
                 ),
               ],
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             child: controller.isSuccess
                 ? _buildSuccessView(context, theme)
                 : _buildFormView(context, theme),
@@ -158,8 +157,8 @@ class ForgotPasswordForm extends StatelessWidget {
         const SizedBox(height: 16),
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFFDCFCE7),
+          decoration: const BoxDecoration(
+            color: Color(0xFFDCFCE7),
             shape: BoxShape.circle,
           ),
           child: const Icon(

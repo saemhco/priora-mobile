@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class GoogleButton extends StatelessWidget {
-  final Function() onTap;
+  const GoogleButton({required this.onTap, super.key, this.text = 'Google'});
+  final VoidCallback onTap;
   final String text;
-  const GoogleButton({super.key, required this.onTap, this.text = 'Google'});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class GoogleButton extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               text,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),

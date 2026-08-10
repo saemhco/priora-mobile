@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/controller/register_controller.dart';
+import 'package:priora/features/shared/auth/presentation/controller/register_controller.dart';
 
 class RegisterForm extends StatelessWidget {
-  final RegisterController controller;
-  final bool isLoading;
 
   const RegisterForm({
-    super.key,
-    required this.controller,
-    required this.isLoading,
+    required this.controller, required this.isLoading, super.key,
   });
+  final RegisterController controller;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +234,7 @@ class RegisterForm extends StatelessWidget {
             // Consent Footer
             const Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'Al registrarte, aceptas nuestros Términos de Servicio y Política de Privacidad.',
                   textAlign: TextAlign.center,

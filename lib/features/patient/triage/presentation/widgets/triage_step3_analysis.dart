@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_state.dart';
 
 class TriageStep3Analysis extends StatelessWidget {
-  final TriageState state;
 
   const TriageStep3Analysis({
-    super.key,
-    required this.state,
+    required this.state, super.key,
   });
+  final TriageState state;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32.0),
+        padding: const EdgeInsets.symmetric(horizontal: 32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -68,16 +67,16 @@ class TriageStep3Analysis extends StatelessWidget {
 
             // Completion message
             if (state.isCompleted)
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
                     color: Colors.green,
                     size: 20,
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
+                  SizedBox(width: 8),
+                  Text(
                     '¡Análisis completado!',
                     style: TextStyle(
                       fontSize: 15,

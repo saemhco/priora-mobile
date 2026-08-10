@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_event.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/patient/home/presentation/widgets/ai_evaluation_card.dart';
 import 'package:priora/features/patient/home/presentation/widgets/home_header.dart';
 import 'package:priora/features/patient/home/presentation/widgets/next_appointment_card.dart';
-import 'package:priora/features/patient/home/presentation/widgets/ai_evaluation_card.dart';
 import 'package:priora/features/patient/home/presentation/widgets/quick_access_section.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_event.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class PatientHomeScreen extends StatefulWidget {
   const PatientHomeScreen({super.key});
@@ -32,7 +32,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
       _appointmentCardKey = UniqueKey();
     });
     context.read<AuthBloc>().add(const AuthLoadProfileRequested());
-    await Future.delayed(const Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
   }
 
   @override
@@ -44,7 +44,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
         physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -56,12 +56,14 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               onNotificationsTap: () => context.push('/notifications'),
             ),
             const SizedBox(height: 24),
-  
+
             // Welcome message
             BlocBuilder<AuthBloc, AuthState>(
               builder: (context, state) {
-                String name = 'Paciente';
-                if (state is AuthAuthenticated && state.firstName != null && state.firstName!.isNotEmpty) {
+                var name = 'Paciente';
+                if (state is AuthAuthenticated &&
+                    state.firstName != null &&
+                    state.firstName!.isNotEmpty) {
                   name = state.firstName!;
                 }
                 return Text(
@@ -94,15 +96,15 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
               ),
             ),
             const SizedBox(height: 24),
-  
+
             // Próxima Cita Card
             NextAppointmentCard(key: _appointmentCardKey),
             const SizedBox(height: 24),
-  
+
             // AI Evaluation Card
             const AIEvaluationCard(),
             const SizedBox(height: 28),
-  
+
             // Quick Access Section
             const QuickAccessSection(),
             const SizedBox(height: 24),

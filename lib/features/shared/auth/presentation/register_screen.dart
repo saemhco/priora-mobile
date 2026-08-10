@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/controller/register_controller.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
-import 'package:priora/features/shared/auth/presentation/widgets/register_header.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
+import 'package:priora/features/shared/auth/presentation/controller/register_controller.dart';
 import 'package:priora/features/shared/auth/presentation/widgets/register_form.dart';
+import 'package:priora/features/shared/auth/presentation/widgets/register_header.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -75,7 +75,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
             body: SafeArea(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 8,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

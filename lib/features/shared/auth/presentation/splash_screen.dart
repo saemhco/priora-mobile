@@ -1,10 +1,11 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_event.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_event.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,17 +32,17 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1400),
     );
 
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(
         parent: _introController,
-        curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
+        curve: const Interval(0, 0.65, curve: Curves.easeOut),
       ),
     );
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1).animate(
       CurvedAnimation(
         parent: _introController,
-        curve: const Interval(0.0, 0.65, curve: Curves.easeOutBack),
+        curve: const Interval(0, 0.65, curve: Curves.easeOutBack),
       ),
     );
 
@@ -53,18 +54,24 @@ class _SplashScreenState extends State<SplashScreen>
 
     _logoPulseAnimation = TweenSequence<double>([
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.06)
-            .chain(CurveTween(curve: Curves.easeOut)),
+        tween: Tween<double>(
+          begin: 1,
+          end: 1.06,
+        ).chain(CurveTween(curve: Curves.easeOut)),
         weight: 35,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.06, end: 0.98)
-            .chain(CurveTween(curve: Curves.easeInOut)),
+        tween: Tween<double>(
+          begin: 1.06,
+          end: 0.98,
+        ).chain(CurveTween(curve: Curves.easeInOut)),
         weight: 30,
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 0.98, end: 1.0)
-            .chain(CurveTween(curve: Curves.easeIn)),
+        tween: Tween<double>(
+          begin: 0.98,
+          end: 1,
+        ).chain(CurveTween(curve: Curves.easeIn)),
         weight: 35,
       ),
     ]).animate(_pulseController);
@@ -77,7 +84,8 @@ class _SplashScreenState extends State<SplashScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authBloc = context.read<AuthBloc>();
       final currentState = authBloc.state;
-      if (currentState is AuthAuthenticated || currentState is AuthUnauthenticated) {
+      if (currentState is AuthAuthenticated ||
+          currentState is AuthUnauthenticated) {
         _handleNavigation(currentState);
       } else {
         authBloc.add(const AuthRestoreSessionRequested());
@@ -145,7 +153,7 @@ class _SplashScreenState extends State<SplashScreen>
                     gradient: RadialGradient(
                       colors: [
                         const Color(0xFF00CBB8).withValues(alpha: 0.14),
-                        const Color(0xFF00CBB8).withValues(alpha: 0.0),
+                        const Color(0xFF00CBB8).withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -161,7 +169,7 @@ class _SplashScreenState extends State<SplashScreen>
                     gradient: RadialGradient(
                       colors: [
                         const Color(0xFF0256C2).withValues(alpha: 0.12),
-                        const Color(0xFF0256C2).withValues(alpha: 0.0),
+                        const Color(0xFF0256C2).withValues(alpha: 0),
                       ],
                     ),
                   ),
@@ -170,7 +178,10 @@ class _SplashScreenState extends State<SplashScreen>
 
               // Animated content
               AnimatedBuilder(
-                animation: Listenable.merge([_introController, _pulseController]),
+                animation: Listenable.merge([
+                  _introController,
+                  _pulseController,
+                ]),
                 builder: (context, child) {
                   return Opacity(
                     opacity: _fadeAnimation.value,
@@ -189,12 +200,17 @@ class _SplashScreenState extends State<SplashScreen>
                                 gradient: const LinearGradient(
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
-                                  colors: [Color(0xFF0256C2), Color(0xFF00CBB8)],
+                                  colors: [
+                                    Color(0xFF0256C2),
+                                    Color(0xFF00CBB8),
+                                  ],
                                 ),
                                 borderRadius: BorderRadius.circular(36),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF0256C2).withValues(alpha: 0.35),
+                                    color: const Color(
+                                      0xFF0256C2,
+                                    ).withValues(alpha: 0.35),
                                     blurRadius: 40,
                                     offset: const Offset(0, 16),
                                   ),
@@ -234,7 +250,7 @@ class _SplashScreenState extends State<SplashScreen>
                           // Loading Indicator
                           const _ThreeDotLoading(
                             color: Color(0xFF0256C2),
-                            size: 8.0,
+                            size: 8,
                           ),
                         ],
                       ),
@@ -251,13 +267,12 @@ class _SplashScreenState extends State<SplashScreen>
 }
 
 class _ThreeDotLoading extends StatefulWidget {
-  final Color color;
-  final double size;
-
   const _ThreeDotLoading({
     required this.color,
     required this.size,
   });
+  final Color color;
+  final double size;
 
   @override
   State<_ThreeDotLoading> createState() => _ThreeDotLoadingState();
@@ -291,15 +306,17 @@ class _ThreeDotLoadingState extends State<_ThreeDotLoading>
           animation: _controller,
           builder: (context, child) {
             final delay = index * 0.25;
-            final double value = math.sin((_controller.value * 2 * math.pi) - (delay * 2 * math.pi));
-            final double scale = 0.5 + (0.5 * (value + 1.0) / 2.0);
+            final value = math.sin(
+              (_controller.value * 2 * math.pi) - (delay * 2 * math.pi),
+            );
+            final scale = 0.5 + (0.5 * (value + 1.0) / 2.0);
 
             return Opacity(
               opacity: 0.4 + (0.6 * (value + 1.0) / 2.0),
               child: Transform.scale(
                 scale: scale,
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   width: widget.size,
                   height: widget.size,
                   decoration: BoxDecoration(

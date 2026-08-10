@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:priora/features/shared/auth/controller/complete_profile_controller.dart';
+import 'package:priora/core/widgets/static_map_preview.dart';
+import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 
 class LocationSection extends StatelessWidget {
-  final CompleteProfileController controller;
-  final bool isLoading;
 
   const LocationSection({
-    super.key,
-    required this.controller,
-    required this.isLoading,
+    required this.controller, required this.isLoading, super.key,
   });
+  final CompleteProfileController controller;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -36,8 +34,8 @@ class LocationSection extends StatelessWidget {
       listenable: controller,
       builder: (context, child) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 24.0),
-          padding: const EdgeInsets.all(20.0),
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -84,27 +82,11 @@ class LocationSection extends StatelessWidget {
                   ),
                   child: Stack(
                     children: [
-                      Center(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/${controller.longitude},${controller.latitude},14,0/600x300?access_token=${dotenv.env['MAPBOX_DOWNLOADS_TOKEN'] ?? 'mock'}',
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                            errorBuilder: (context, error, stackTrace) =>
-                                Container(
-                                  color: const Color(0xFF334E57),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.map,
-                                      color: Colors.white60,
-                                      size: 40,
-                                    ),
-                                  ),
-                                ),
-                          ),
-                        ),
+                      StaticMapPreview(
+                        latitude: controller.latitude,
+                        longitude: controller.longitude,
+                        height: 160,
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       if (controller.hasSelectedLocation)
                         const Center(
@@ -117,7 +99,7 @@ class LocationSection extends StatelessWidget {
                       else
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.55),
+                            color: Colors.black.withValues(alpha: 0.55),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: const Center(

@@ -5,24 +5,81 @@
 # IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
 # invoked from the command line by running `flutter analyze`.
 
-# The following line activates a set of recommended lints for Flutter apps,
-# packages, and plugins designed to encourage good coding practices.
-include: package:flutter_lints/flutter.yaml
+# ─────────────────────────────────────────────────────────────────────────────
+# BASE LINT SET
+# very_good_analysis: strict superset of flutter_lints (200+ rules).
+# https://pub.dev/packages/very_good_analysis
+# ─────────────────────────────────────────────────────────────────────────────
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  # Legacy plugin registration for dart_code_linter (used by IDEs).
+  # NOTE: `flutter analyze` / `dart analyze` CLI do NOT load analyzer plugins;
+  # dart_code_linter must be run via its own CLI, see PROJECT_RULES.md.
+  plugins:
+    - dart_code_linter
+
+  exclude:
+    - build/**
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
 
 linter:
-  # The lint rules applied to this project can be customized in the
-  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
-  # included above or to enable additional rules. A list of all available lints
-  # and their documentation is published at https://dart.dev/lints.
-  #
-  # Instead of disabling a lint rule for the entire project in the
-  # section below, it can also be suppressed for a single line of code
-  # or a specific dart file by using the `// ignore: name_of_lint` and
-  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
-  # producing the lint.
   rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+    # Disabled (too noisy for this codebase):
+    # - Requires doc comments on every public member.
+    public_member_api_docs: false
+    # - Enforces 80-char lines (re-enable after running `dart format`).
+    lines_longer_than_80_chars: false
+    # - Cascade notation is a style preference and can make sequential registration blocks less readable.
+    cascade_invocations: false
+    # - Enforcing "on Exception catch" ignores custom errors or TypeError subclasses which are common.
+    avoid_catches_without_on_clauses: false
+    # - Too pedantic for event handlers, UI side effects, and state updates.
+    discarded_futures: false
+    # - Positional boolean parameters are extremely common and natural in Dart.
+    avoid_positional_boolean_parameters: false
+    # - Changing properties via standard methods is standard and readable.
+    use_setters_to_change_properties: false
+    # - Untyped API JSON responses are accessed directly throughout the UI.
+    avoid_dynamic_calls: false
+    # - Disable document_ignores (allows standard ignores without forcing redundant comments above every ignore statement).
+    document_ignores: false
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+# ─────────────────────────────────────────────────────────────────────────────
+# CUSTOM RULES (dart_code_linter)
+# Powerful plugin with architecture-oriented rules that enforce the rules in
+# PROJECT_RULES.md:
+#   - prefer-single-widget-per-file  → One widget/class per file
+#   - avoid-returning-widgets        → Extract reusable widgets instead of
+#                                      returning them from methods
+#   - prefer-extracting-callbacks    → Reusable/extracted callbacks
+# Run: `dart run dart_code_linter:metrics analyze lib`
+# https://pub.dev/packages/dart_code_linter
+# ─────────────────────────────────────────────────────────────────────────────
+dart_code_linter:
+  rules:
+    # ── Architecture / PROJECT_RULES.md ─────────────────────────────────
+    - prefer-single-widget-per-file:
+        ignore-private-widgets: true
+    - avoid-returning-widgets
+    - prefer-extracting-callbacks
+    # ── Type safety & clean code ────────────────────────────────────────
+    - avoid-dynamic
+    - avoid-non-null-assertion
+    - avoid-unnecessary-type-casts
+    - avoid-unnecessary-conditionals
+    - avoid-unused-parameters
+    - avoid-nested-conditional-expressions
+    - avoid-unnecessary-setstate
+    - use-setstate-synchronously
+    - no-boolean-literal-compare
+    - no-empty-block
+    - no-equal-then-else
+    - newline-before-return
+    - prefer-trailing-comma
+    - prefer-conditional-expressions
+    - prefer-immediate-return
+    - prefer-moving-to-variable
+    - prefer-using-list-view

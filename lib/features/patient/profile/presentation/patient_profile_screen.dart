@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:priora/features/patient/profile/controller/patient_profile_controller.dart';
-import 'package:priora/features/patient/profile/presentation/widgets/profile_header_card.dart';
-import 'package:priora/features/patient/profile/presentation/widgets/personal_info_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:priora/features/patient/profile/presentation/controller/patient_profile_controller.dart';
+import 'package:priora/features/patient/profile/presentation/controller/profile_cubit.dart';
+import 'package:priora/features/patient/profile/presentation/controller/profile_state.dart';
 import 'package:priora/features/patient/profile/presentation/widgets/location_card.dart';
 import 'package:priora/features/patient/profile/presentation/widgets/logout_button.dart';
+import 'package:priora/features/patient/profile/presentation/widgets/personal_info_card.dart';
+import 'package:priora/features/patient/profile/presentation/widgets/profile_header_card.dart';
+import 'package:priora/features/patient/profile/presentation/widgets/profile_skeleton.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
-
-import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit/profile_cubit.dart';
-import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit/profile_state.dart';
-
+/// Patient profile screen. It only composes the widget tree; the state and
+/// logic live in [ProfileCubit].
 class PatientProfileScreen extends StatefulWidget {
   const PatientProfileScreen({super.key});
 
@@ -20,6 +21,8 @@ class PatientProfileScreen extends StatefulWidget {
 }
 
 class _PatientProfileScreenState extends State<PatientProfileScreen> {
+  final _controller = PatientProfileController();
+
   @override
   void initState() {
     super.initState();
@@ -29,13 +32,11 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
   Future<void> _loadProfile() async {
     final authState = context.read<AuthBloc>().state;
     final token = authState is AuthAuthenticated ? authState.accessToken : '';
-    context.read<ProfileCubit>().loadProfile(accessToken: token);
+    await context.read<ProfileCubit>().loadProfile(accessToken: token);
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = PatientProfileController();
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       body: RefreshIndicator(
@@ -45,14 +46,14 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
           child: BlocBuilder<ProfileCubit, ProfileState>(
             builder: (context, state) {
               if (state is ProfileLoading || state is ProfileInitial) {
                 return const ProfileSkeleton();
               } else if (state is ProfileError) {
                 return Container(
-                  padding: const EdgeInsets.symmetric(vertical: 60.0),
+                  padding: const EdgeInsets.symmetric(vertical: 60),
                   alignment: Alignment.center,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -83,123 +84,42 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
                     ],
                   ),
                 );
-              } else {
-                // ProfileLoaded, ProfileUpdating, ProfileUpdated
-                final profileModel = (state is ProfileLoaded)
-                    ? state.profile
-                    : (state is ProfileUpdating)
-                    ? state.currentProfile
-                    : (state is ProfileUpdated)
-                    ? state.updatedProfile
-                    : null;
-                final profileMap = profileModel?.toJson();
-
-                return Column(
-                  children: [
-                    // Top Profile Card
-                    ProfileHeaderCard(
-                      profile: profileMap,
-                      onEdit: () async {
-                        controller.editProfile(context);
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Personal Info Card
-                    PersonalInfoCard(profile: profileMap),
-                    const SizedBox(height: 20),
-
-                    // Location Card
-                    LocationCard(profile: profileMap),
-                    const SizedBox(height: 20),
-
-                    // Logout Button
-                    LogoutButton(onLogout: () => controller.logout(context)),
-                    const SizedBox(height: 20),
-                  ],
-                );
               }
+
+              // ProfileLoaded, ProfileUpdating, ProfileUpdated
+              final profile = (state is ProfileLoaded)
+                  ? state.profile
+                  : (state is ProfileUpdating)
+                  ? state.currentProfile
+                  : (state is ProfileUpdated)
+                  ? state.updatedProfile
+                  : null;
+
+              return Column(
+                children: [
+                  // Top Profile Card
+                  ProfileHeaderCard(
+                    profile: profile,
+                    onEdit: () => _controller.editProfile(context),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Personal Info Card
+                  PersonalInfoCard(profile: profile),
+                  const SizedBox(height: 20),
+
+                  // Location Card
+                  LocationCard(profile: profile),
+                  const SizedBox(height: 20),
+
+                  // Logout Button
+                  LogoutButton(onLogout: () => _controller.logout(context)),
+                  const SizedBox(height: 20),
+                ],
+              );
             },
           ),
         ),
-      ),
-    );
-  }
-}
-
-class ProfileSkeleton extends StatefulWidget {
-  const ProfileSkeleton({super.key});
-
-  @override
-  State<ProfileSkeleton> createState() => _ProfileSkeletonState();
-}
-
-class _ProfileSkeletonState extends State<ProfileSkeleton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-    _animation = Tween<double>(
-      begin: 0.35,
-      end: 0.85,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Opacity(opacity: _animation.value, child: child);
-      },
-      child: Column(
-        children: [
-          // Header Card Skeleton
-          Container(
-            width: double.infinity,
-            height: 180,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Info Card Skeleton
-          Container(
-            width: double.infinity,
-            height: 220,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Location Card Skeleton
-          Container(
-            width: double.infinity,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
-            ),
-          ),
-        ],
       ),
     );
   }

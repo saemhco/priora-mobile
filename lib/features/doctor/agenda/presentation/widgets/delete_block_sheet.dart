@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:priora/features/doctor/agenda/data/models/weekly_schedule_model.dart';
+import 'package:priora/features/doctor/agenda/domain/models/weekly_schedule.dart';
+import 'package:priora/features/doctor/agenda/presentation/widgets/delete_block_sheet_result.dart';
 
-/// Bottom sheet para seleccionar un bloque de disponibilidad y eliminarlo.
-///
-/// Retorna un [DeleteBlockSheetResult] con la acción realizada por el usuario:
-/// - `success: true` + `blockId` cuando el usuario confirma la eliminación.
-/// - `success: false` cuando el usuario cancela o no hay bloques.
+/// Bottom sheet to select an availability block and delete it. Returns a
+/// [DeleteBlockSheetResult] with the action performed by the user: - `success:
+/// true` + `blockId` when the user confirms the deletion. - `success: false`
+/// when the user cancels or there are no blocks.
 class DeleteBlockSheet extends StatefulWidget {
-  final List<WeeklySchedule> blocks;
 
-  const DeleteBlockSheet({super.key, required this.blocks});
+  const DeleteBlockSheet({required this.blocks, super.key});
+  final List<WeeklySchedule> blocks;
 
   @override
   State<DeleteBlockSheet> createState() => _DeleteBlockSheetState();
@@ -381,8 +381,8 @@ class _DeleteBlockSheetState extends State<DeleteBlockSheet> {
                 children: [
                   Text(
                     '$dayLabel · ${block.startTime} – ${block.endTime}',
-                    style: TextStyle(
-                      color: const Color(0xFF1E293B),
+                    style: const TextStyle(
+                      color: Color(0xFF1E293B),
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -424,12 +424,4 @@ class _DeleteBlockSheetState extends State<DeleteBlockSheet> {
       ),
     );
   }
-}
-
-@immutable
-class DeleteBlockSheetResult {
-  final bool success;
-  final String? blockId;
-
-  const DeleteBlockSheetResult({required this.success, this.blockId});
 }

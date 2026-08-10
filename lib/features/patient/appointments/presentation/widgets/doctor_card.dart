@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:priora/features/patient/appointments/controller/appointments_controller.dart';
+import 'package:priora/features/patient/appointments/domain/models/doctor.dart';
 
 class DoctorCard extends StatefulWidget {
-  final DoctorModel doctor;
-  final Function(String) onSelectSlot;
-  final VoidCallback onViewCalendar;
-
   const DoctorCard({
     required this.doctor,
     required this.onSelectSlot,
     required this.onViewCalendar,
     super.key,
   });
+  final Doctor doctor;
+  final void Function(String) onSelectSlot;
+  final VoidCallback onViewCalendar;
 
   @override
   State<DoctorCard> createState() => _DoctorCardState();
@@ -23,7 +22,7 @@ class _DoctorCardState extends State<DoctorCard> {
   Map<String, List<String>> _groupSlotsByDate(
     List<Map<String, dynamic>> rawSlots,
   ) {
-    final Map<String, List<String>> grouped = {};
+    final grouped = <String, List<String>>{};
     final now = DateTime.now();
 
     for (final slot in rawSlots) {
@@ -37,7 +36,7 @@ class _DoctorCardState extends State<DoctorCard> {
             : DateTime.parse(slot['datetime'].toString()).toLocal();
 
         // Format date label
-        String dateLabel = '';
+        var dateLabel = '';
         if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
           dateLabel = 'Hoy, ${_formatDayMonth(dt)}';
         } else if (dt.day == now.day + 1 &&
@@ -72,7 +71,8 @@ class _DoctorCardState extends State<DoctorCard> {
     return '${dt.day} ${months[dt.month - 1]}';
   }
 
-  /// Chip de hora que muestra también el tipo de cita (Virtual / Presencial).
+  /// Time chip that also shows the type of appointment (Virtual /
+  /// Face-to-face).
   Widget _buildSlotChip({
     required String slot,
     required bool isSelected,
@@ -185,14 +185,14 @@ class _DoctorCardState extends State<DoctorCard> {
         border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.02),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -359,7 +359,7 @@ class _DoctorCardState extends State<DoctorCard> {
                 final meetingType = widget.doctor.meetingTypeForSlot(slot);
                 return Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: _buildSlotChip(
                       slot: slot,
                       isSelected: isSelected,
@@ -381,7 +381,7 @@ class _DoctorCardState extends State<DoctorCard> {
                 final slotsForDate = entry.value;
 
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12.0),
+                  padding: const EdgeInsets.only(bottom: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -401,8 +401,9 @@ class _DoctorCardState extends State<DoctorCard> {
                         children: slotsForDate.map((slot) {
                           final isSelected =
                               slot == widget.doctor.selectedTimeSlot;
-                          final meetingType =
-                              widget.doctor.meetingTypeForSlot(slot);
+                          final meetingType = widget.doctor.meetingTypeForSlot(
+                            slot,
+                          );
                           return _buildSlotChip(
                             slot: slot,
                             isSelected: isSelected,

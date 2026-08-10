@@ -1,19 +1,21 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_message.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_state.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_header.dart';
 
 class TriageStep2Chat extends StatefulWidget {
-  final TriageState state;
-  final String accessToken;
-
   const TriageStep2Chat({
-    super.key,
     required this.state,
     required this.accessToken,
+    super.key,
   });
+  final TriageState state;
+  final String accessToken;
 
   @override
   State<TriageStep2Chat> createState() => _TriageStep2ChatState();
@@ -33,6 +35,25 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
   void initState() {
     super.initState();
     _cubit = context.read<TriageCubit>();
+    // Al abrir la pantalla, posiciona el chat al final (mensaje más reciente).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _scrollToBottom();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(TriageStep2Chat oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Solo hace scroll al final cuando llega un mensaje NUEVO.
+    // Sin esto, al tocar o escribir en los inputs generados por la IA
+    // (que reconstruyen el widget por el teclado o `updateAnswer`),
+    // el scroll saltaría al final y el input quedaría fuera de vista.
+    if (widget.state.chatMessages.length !=
+        oldWidget.state.chatMessages.length) {
+      _scrollToBottom();
+    }
   }
 
   @override
@@ -59,7 +80,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(
+      final pickedFile = await _picker.pickImage(
         source: source,
         maxWidth: 1024,
         maxHeight: 1024,
@@ -101,8 +122,10 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
   }
 
   void _updateControllers() {
-    final currentIds = widget.state.missingQuestions.map((q) => q['id']?.toString() ?? '').toSet();
-    
+    final currentIds = widget.state.missingQuestions
+        .map((q) => q['id']?.toString() ?? '')
+        .toSet();
+
     _controllers.keys.toList().forEach((id) {
       if (!currentIds.contains(id)) {
         _controllers[id]?.dispose();
@@ -110,7 +133,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
       }
     });
 
-    for (var q in widget.state.missingQuestions) {
+    for (final q in widget.state.missingQuestions) {
       final id = q['id']?.toString() ?? '';
       final qType = q['type']?.toString() ?? 'text';
       if (qType != 'choice') {
@@ -134,7 +157,6 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
   @override
   Widget build(BuildContext context) {
     _updateControllers();
-    _scrollToBottom();
 
     return Stack(
       children: [
@@ -142,7 +164,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
           children: [
             // Triage Header
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               child: TriageHeader(
                 currentStep: 2,
                 totalSteps: 2,
@@ -161,7 +183,8 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                   vertical: 16,
                 ),
                 itemCount:
-                    widget.state.chatMessages.length + (widget.state.isAnalyzing ? 1 : 0),
+                    widget.state.chatMessages.length +
+                    (widget.state.isAnalyzing ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == widget.state.chatMessages.length) {
                     return _buildAnalyzingBubble();
@@ -199,7 +222,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                 color: Colors.white,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 10,
                     offset: const Offset(0, -2),
                   ),
@@ -222,7 +245,6 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: const Color(0xFFE2E8F0),
-                          width: 1,
                         ),
                       ),
                       child: Icon(
@@ -242,7 +264,6 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: const Color(0xFFE2E8F0),
-                          width: 1,
                         ),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -262,9 +283,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                             border: InputBorder.none,
                             isCollapsed: true,
                           ),
-                          onSubmitted: (value) {
-                            _sendCurrentMessage(value);
-                          },
+                          onSubmitted: _sendCurrentMessage,
                         ),
                       ),
                     ),
@@ -306,7 +325,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
       decoration: const BoxDecoration(
         color: Color(0xFFF1F5F9),
         border: Border(
-          top: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+          top: BorderSide(color: Color(0xFFE2E8F0)),
         ),
       ),
       child: Row(
@@ -349,11 +368,11 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
             ],
           ),
           const SizedBox(width: 16),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Imagen seleccionada',
                   style: TextStyle(
                     fontSize: 13,
@@ -361,7 +380,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                     color: Color(0xFF1E293B),
                   ),
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: 2),
                 Text(
                   'Se enviará con tu mensaje',
                   style: TextStyle(
@@ -385,12 +404,12 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),
         ],
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -450,13 +469,13 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
   }
 
   void _showImageSourceBottomSheet(BuildContext context) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (BuildContext context) {
+      builder: (context) {
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -601,7 +620,6 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                     color: message.isUser
                         ? Colors.transparent
                         : const Color(0xFFE2E8F0),
-                    width: 1,
                   ),
                 ),
                 child: Column(
@@ -653,7 +671,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
 
   Widget _buildAnalyzingBubble() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14.0),
+      padding: const EdgeInsets.only(bottom: 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -681,7 +699,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                 bottomLeft: Radius.circular(4),
                 bottomRight: Radius.circular(16),
               ),
-              border: Border.all(color: const Color(0xFFCFFAFE), width: 1),
+              border: Border.all(color: const Color(0xFFCFFAFE)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -721,7 +739,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
   Widget _buildOptionsCard(List<String> options) {
     final hasMissingQuestions = widget.state.missingQuestions.isNotEmpty;
 
-    final bool allAnswered = widget.state.missingQuestions.every((q) {
+    final allAnswered = widget.state.missingQuestions.every((q) {
       final qId = q['id']?.toString() ?? '';
       final ans = widget.state.answers[qId];
       return ans != null && ans.trim().isNotEmpty;
@@ -732,7 +750,7 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
       decoration: BoxDecoration(
         color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -752,15 +770,17 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: options.map((option) {
-              final Map<String, dynamic>? matchingQuestion =
+              final matchingQuestion =
                   widget.state.missingQuestions.firstWhere(
-                (q) => q['question']?.toString().trim() == option.trim(),
-                orElse: () => null,
-              );
+                        (q) =>
+                            q['question']?.toString().trim() == option.trim(),
+                        orElse: () => null,
+                      )
+                      as Map<String, dynamic>?;
 
               if (matchingQuestion == null) {
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                  padding: const EdgeInsets.only(bottom: 8),
                   child: GestureDetector(
                     onTap: () {
                       _cubit.sendMessage(widget.accessToken, option);
@@ -803,14 +823,16 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                 );
               }
 
-              final String qId = matchingQuestion['id']?.toString() ?? '';
-              final String qText = matchingQuestion['question']?.toString() ?? '';
-              final String qType = matchingQuestion['type']?.toString() ?? 'text';
-              final List<dynamic> qChoices = matchingQuestion['choices'] ?? [];
+              final qId = matchingQuestion['id']?.toString() ?? '';
+              final qText = matchingQuestion['question']?.toString() ?? '';
+              final qType = matchingQuestion['type']?.toString() ?? 'text';
+              final qChoices =
+                  (matchingQuestion['choices'] as List<dynamic>?) ??
+                  <dynamic>[];
               final currentAnswer = widget.state.answers[qId] ?? '';
 
               return Padding(
-                padding: const EdgeInsets.only(bottom: 16.0),
+                padding: const EdgeInsets.only(bottom: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -930,8 +952,12 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0256C2),
                   foregroundColor: Colors.white,
-                  disabledBackgroundColor: const Color(0xFFEFF6FF), // soft light blue when disabled
-                  disabledForegroundColor: const Color(0xFFBFDBFE), // soft disabled blue text
+                  disabledBackgroundColor: const Color(
+                    0xFFEFF6FF,
+                  ), // soft light blue when disabled
+                  disabledForegroundColor: const Color(
+                    0xFFBFDBFE,
+                  ), // soft disabled blue text
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -947,9 +973,9 @@ class _TriageStep2ChatState extends State<TriageStep2Chat> {
                           strokeWidth: 2.5,
                         ),
                       )
-                    : Row(
+                    : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
+                        children: [
                           Icon(
                             Icons.check_circle_outline_rounded,
                             size: 18,

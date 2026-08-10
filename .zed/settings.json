@@ -1,0 +1,22 @@
+{
+  "lsp": {
+    "dart": {
+      "binary": {
+        "path": "/opt/homebrew/bin/fvm",
+        "arguments": [
+          "dart",
+          "language-server",
+          "--protocol=lsp"
+        ]
+      }
+    }
+  },
+  "languages": {
+    "Dart": {
+      "format_on_save": "on",
+      "code_actions_on_format": {
+        "source.organizeImports": true
+      }
+    }
+  }
+}

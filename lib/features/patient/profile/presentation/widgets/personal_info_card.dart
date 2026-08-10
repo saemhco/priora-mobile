@@ -1,30 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:priora/features/patient/profile/domain/models/patient_profile.dart';
 
 class PersonalInfoCard extends StatelessWidget {
-  final Map<String, dynamic>? profile;
   const PersonalInfoCard({super.key, this.profile});
+
+  final PatientProfile? profile;
 
   @override
   Widget build(BuildContext context) {
-    final docType = profile?['documentType'] ?? 'DNI';
-    final docNum = profile?['documentId'] ?? 'No registrado';
-    final phone = profile?['phone'] ?? 'No registrado';
-    final occupation = profile?['occupation'] ?? 'No registrada';
-    
+    final docType = profile?.documentType ?? 'DNI';
+    final docNum = profile?.documentId ?? 'No registrado';
+    final phone = profile?.phone ?? 'No registrado';
+    final occupation = profile?.occupation ?? 'No registrada';
+
     // Format Biological Sex
-    final rawSex = profile?['biologicalSex']?.toString().toUpperCase();
+    final rawSex = profile?.biologicalSex?.toUpperCase();
     final biologicalSex = rawSex == 'MALE'
         ? 'Masculino'
         : (rawSex == 'FEMALE' ? 'Femenino' : 'No registrado');
 
     // Format Gender Identity
-    final rawGender = profile?['genderIdentity']?.toString().toUpperCase();
+    final rawGender = profile?.genderIdentity?.toUpperCase();
     final genderIdentity = rawGender == 'MAN'
         ? 'Hombre'
-        : (rawGender == 'WOMAN' ? 'Mujer' : (profile?['genderIdentity'] ?? 'No registrado'));
+        : (rawGender == 'WOMAN'
+            ? 'Mujer'
+            : (profile?.genderIdentity ?? 'No registrado'));
 
     // Format DOB
-    final dobStr = profile?['dateOfBirth'] ?? 'No registrada';
+    final dobStr = profile?.dateOfBirth ?? 'No registrada';
 
     return Container(
       width: double.infinity,
@@ -33,13 +37,13 @@ class PersonalInfoCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -70,7 +74,7 @@ class PersonalInfoCard extends StatelessWidget {
             value: '$docType $docNum',
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
@@ -80,7 +84,7 @@ class PersonalInfoCard extends StatelessWidget {
             value: dobStr,
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
@@ -90,7 +94,7 @@ class PersonalInfoCard extends StatelessWidget {
             value: phone,
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
@@ -100,7 +104,7 @@ class PersonalInfoCard extends StatelessWidget {
             value: occupation,
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
@@ -110,7 +114,7 @@ class PersonalInfoCard extends StatelessWidget {
             value: biologicalSex,
           ),
           const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
+            padding: EdgeInsets.symmetric(vertical: 10),
             child: Divider(color: Color(0xFFF1F5F9), height: 1),
           ),
 
@@ -133,7 +137,7 @@ class PersonalInfoCard extends StatelessWidget {
           style: const TextStyle(
             color: Color(0xFF94A3B8),
             fontSize: 11,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
           ),
         ),
@@ -143,7 +147,7 @@ class PersonalInfoCard extends StatelessWidget {
           style: const TextStyle(
             color: Color(0xFF1E293B),
             fontSize: 15,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],

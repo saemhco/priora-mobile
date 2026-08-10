@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class AppointmentSearchBar extends StatelessWidget {
-  final ValueChanged<String> onChanged;
 
   const AppointmentSearchBar({
     required this.onChanged,
     super.key,
   });
+  final ValueChanged<String> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -22,20 +22,20 @@ class AppointmentSearchBar extends StatelessWidget {
           color: Color(0xFF1E293B),
           fontWeight: FontWeight.w500,
         ),
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           hintText: 'Especialidad, nombre o clínica',
-          hintStyle: const TextStyle(
+          hintStyle: TextStyle(
             color: Color(0xFF94A3B8),
             fontSize: 15,
             fontWeight: FontWeight.normal,
           ),
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search,
             color: Color(0xFF64748B),
             size: 22,
           ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
+          contentPadding: EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 14,
           ),

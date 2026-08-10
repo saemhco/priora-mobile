@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 class SpecialtyFilterChips extends StatelessWidget {
-  final List<String> specialties;
-  final String selectedSpecialty;
-  final ValueChanged<String> onSelected;
 
   const SpecialtyFilterChips({
     required this.specialties,
@@ -11,6 +8,9 @@ class SpecialtyFilterChips extends StatelessWidget {
     required this.onSelected,
     super.key,
   });
+  final List<String> specialties;
+  final String selectedSpecialty;
+  final ValueChanged<String> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class SpecialtyFilterChips extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF0E5FD9) : const Color(0xFFE2E8F0).withOpacity(0.6),
+                    color: isSelected ? const Color(0xFF0E5FD9) : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(

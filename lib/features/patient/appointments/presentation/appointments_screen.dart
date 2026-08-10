@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/patient/appointments/controller/appointments_controller.dart';
-import 'package:priora/features/patient/appointments/presentation/widgets/appointment_search_bar.dart';
-import 'package:priora/features/patient/appointments/presentation/widgets/specialty_filter_chips.dart';
-import 'package:priora/features/patient/appointments/presentation/widgets/doctor_card.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
-import 'package:priora/features/patient/appointments/data/appointments_repository.dart';
-import 'package:priora/features/patient/triage/data/triage_repository.dart';
-import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
+import 'package:priora/features/patient/appointments/domain/interfaces/appointments_repository.dart';
+import 'package:priora/features/patient/appointments/domain/models/doctor.dart';
 import 'package:priora/features/patient/appointments/presentation/confirm_booking_screen.dart';
+import 'package:priora/features/patient/appointments/presentation/controller/appointments_controller.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/appointment_search_bar.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/doctor_card.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/doctor_list_skeleton.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/no_active_appointments.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/past_appointments_toggle.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/patient_appointment_card.dart';
+import 'package:priora/features/patient/appointments/presentation/widgets/specialty_filter_chips.dart';
+import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
+import 'package:priora/features/patient/triage/domain/interfaces/triage_repository.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class PatientAppointmentsScreen extends StatefulWidget {
   const PatientAppointmentsScreen({super.key});
@@ -47,99 +52,16 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
     super.dispose();
   }
 
-  void _confirmBooking(BuildContext context, DoctorModel doctor, String slot) {
+  void _confirmBooking(BuildContext context, Doctor doctor, String slot) {
     final navigationCubit = context.read<PatientNavigationCubit>();
-    Navigator.of(context).push(
-      MaterialPageRoute(
+    Navigator.of(context).push<void>(
+      MaterialPageRoute<void>(
         builder: (_) => ConfirmBookingScreen(
           doctor: doctor,
           slot: slot,
           controller: _controller!,
           navigationCubit: navigationCubit,
         ),
-      ),
-    );
-  }
-
-  /// Toggle para mostrar u ocultar citas pasadas en "Mis citas".
-  Widget _buildPastAppointmentsToggle(AppointmentsController controller) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.history_rounded, color: Color(0xFF64748B), size: 20),
-          const SizedBox(width: 10),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Mostrar citas pasadas',
-                  style: TextStyle(
-                    color: Color(0xFF1E293B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Actívalo para ver citas que ya se realizaron',
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Switch(
-            value: controller.showPastAppointments,
-            onChanged: (_) => controller.toggleShowPastAppointments(),
-            activeTrackColor: const Color(0xFF0256C2),
-            activeThumbColor: Colors.white,
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Mensaje cuando hay citas pero ninguna es vigente (todas pasadas y el
-  /// toggle de pasadas está desactivado).
-  Widget _buildNoActiveAppointments() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Column(
-        children: [
-          Icon(
-            Icons.event_available_rounded,
-            color: Color(0xFFCBD5E1),
-            size: 32,
-          ),
-          SizedBox(height: 10),
-          Text(
-            'No tienes citas vigentes',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF1E293B),
-            ),
-          ),
-          SizedBox(height: 4),
-          Text(
-            'Activa "Mostrar citas pasadas" para ver el historial.',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 13, color: Color(0xFF94A3B8)),
-          ),
-        ],
       ),
     );
   }
@@ -554,192 +476,17 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                                       : filteredMyAppointments.length + 1,
                                   itemBuilder: (context, index) {
                                     if (index == 0) {
-                                      return _buildPastAppointmentsToggle(
-                                        _controller!,
+                                      return PastAppointmentsToggle(
+                                        controller: _controller!,
                                       );
                                     }
                                     if (filteredMyAppointments.isEmpty) {
-                                      return _buildNoActiveAppointments();
+                                      return const NoActiveAppointments();
                                     }
                                     final appointment =
                                         filteredMyAppointments[index - 1];
-                                    return Container(
-                                      margin: const EdgeInsets.only(bottom: 16),
-                                      padding: const EdgeInsets.all(16),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(
-                                          color: const Color(0xFFF1F5F9),
-                                          width: 1.5,
-                                        ),
-                                        boxShadow: const [
-                                          BoxShadow(
-                                            color: Color(0x050F172A),
-                                            blurRadius: 10,
-                                            offset: Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(
-                                              14,
-                                            ),
-                                            child: Image.network(
-                                              appointment['doctorAvatar'] ?? '',
-                                              width: 56,
-                                              height: 56,
-                                              fit: BoxFit.cover,
-                                              errorBuilder:
-                                                  (
-                                                    context,
-                                                    error,
-                                                    stackTrace,
-                                                  ) => Container(
-                                                    color: const Color(
-                                                      0xFFEFF6FF,
-                                                    ),
-                                                    width: 56,
-                                                    height: 56,
-                                                    child: const Icon(
-                                                      Icons.person,
-                                                      color: Color(0xFF3B82F6),
-                                                    ),
-                                                  ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 14),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        appointment['doctorName'] ??
-                                                            '',
-                                                        style: const TextStyle(
-                                                          fontSize: 16,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Color(
-                                                            0xFF0F172A,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Container(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                            vertical: 4,
-                                                          ),
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            appointment['isVirtual'] ==
-                                                                true
-                                                            ? const Color(
-                                                                0xFFECFDF5,
-                                                              )
-                                                            : const Color(
-                                                                0xFFEFF6FF,
-                                                              ),
-                                                        borderRadius:
-                                                            BorderRadius.circular(
-                                                              20,
-                                                            ),
-                                                      ),
-                                                      child: Text(
-                                                        appointment['isVirtual'] ==
-                                                                true
-                                                            ? 'Virtual'
-                                                            : 'Presencial',
-                                                        style: TextStyle(
-                                                          fontSize: 11,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color:
-                                                              appointment['isVirtual'] ==
-                                                                  true
-                                                              ? const Color(
-                                                                  0xFF059669,
-                                                                )
-                                                              : const Color(
-                                                                  0xFF2563EB,
-                                                                ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  appointment['doctorSpecialty'] ??
-                                                      '',
-                                                  style: const TextStyle(
-                                                    fontSize: 13,
-                                                    color: Color(0xFF64748B),
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 12),
-                                                const Divider(
-                                                  color: Color(0xFFF1F5F9),
-                                                  height: 1,
-                                                ),
-                                                const SizedBox(height: 12),
-                                                Row(
-                                                  children: [
-                                                    const Icon(
-                                                      Icons
-                                                          .calendar_today_rounded,
-                                                      size: 14,
-                                                      color: Color(0xFF64748B),
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      appointment['formattedDate'] ??
-                                                          '',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: Color(
-                                                          0xFF334155,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 14),
-                                                    const Icon(
-                                                      Icons.access_time_rounded,
-                                                      size: 14,
-                                                      color: Color(0xFF64748B),
-                                                    ),
-                                                    const SizedBox(width: 6),
-                                                    Text(
-                                                      appointment['formattedTime'] ??
-                                                          '',
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color: Color(
-                                                          0xFF334155,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    return PatientAppointmentCard(
+                                      appointment: appointment,
                                     );
                                   },
                                 ),
@@ -753,176 +500,6 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
           ),
         );
       },
-    );
-  }
-}
-
-class DoctorListSkeleton extends StatefulWidget {
-  const DoctorListSkeleton({super.key});
-
-  @override
-  State<DoctorListSkeleton> createState() => _DoctorListSkeletonState();
-}
-
-class _DoctorListSkeletonState extends State<DoctorListSkeleton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-    _animation = Tween<double>(
-      begin: 0.35,
-      end: 0.85,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Opacity(opacity: _animation.value, child: child);
-      },
-      child: Column(
-        children: List.generate(2, (index) => _buildSkeletonCard()),
-      ),
-    );
-  }
-
-  Widget _buildSkeletonCard() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            width: 120,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE2E8F0),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          Container(
-                            width: 30,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE2E8F0),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        width: 80,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Container(
-                        width: 140,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE2E8F0),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            const Divider(color: Color(0xFFF1F5F9), height: 1),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 90,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                Container(
-                  width: 70,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE2E8F0),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(3, (index) {
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: Container(
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: const Color(0xFFE2E8F0),
-                          width: 1.2,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -18,13 +18,13 @@ class AIEvaluationCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0256C2).withOpacity(0.25),
+            color: const Color(0xFF0256C2).withValues(alpha: 0.25),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -34,7 +34,7 @@ class AIEvaluationCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
+                  color: Colors.white.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -83,7 +83,7 @@ class AIEvaluationCard extends StatelessWidget {
               context.read<PatientNavigationCubit>().changeIndex(1);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.15),
+              backgroundColor: Colors.white.withValues(alpha: 0.15),
               foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

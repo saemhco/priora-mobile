@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:priora/features/shared/auth/controller/complete_profile_controller.dart';
+import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 
 class PersonalInfoSection extends StatelessWidget {
-  final CompleteProfileController controller;
-  final bool isLoading;
 
   const PersonalInfoSection({
-    super.key,
-    required this.controller,
-    required this.isLoading,
+    required this.controller, required this.isLoading, super.key,
   });
+  final CompleteProfileController controller;
+  final bool isLoading;
 
   InputDecoration _buildInputDecoration({required String hintText, Widget? suffixIcon}) {
     return InputDecoration(
@@ -41,8 +39,8 @@ class PersonalInfoSection extends StatelessWidget {
       listenable: controller,
       builder: (context, child) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 24.0),
-          padding: const EdgeInsets.all(20.0),
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -181,17 +179,10 @@ class PersonalInfoSection extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               InternationalPhoneNumberInput(
-                onInputChanged: (PhoneNumber number) {
-                  controller.setPhoneNumber(number);
-                },
+                onInputChanged: controller.setPhoneNumber,
                 selectorConfig: const SelectorConfig(
-                  selectorType: PhoneInputSelectorType.DROPDOWN,
-                  showFlags: true,
-                  useEmoji: false,
                   setSelectorButtonAsPrefixIcon: true,
                 ),
-                ignoreBlank: false,
-                autoValidateMode: AutovalidateMode.disabled,
                 selectorTextStyle: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
                 initialValue: controller.initialPhoneNumber,
                 textFieldController: controller.phoneInputController,
@@ -199,7 +190,6 @@ class PersonalInfoSection extends StatelessWidget {
                 isEnabled: !isLoading,
                 keyboardType: const TextInputType.numberWithOptions(
                   signed: true,
-                  decimal: false,
                 ),
                 textStyle: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
                 inputDecoration: _buildInputDecoration(hintText: '987654321'),

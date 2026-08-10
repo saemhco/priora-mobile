@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/controller/login_controller.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
-import 'package:priora/features/shared/auth/presentation/widgets/login_header.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
+import 'package:priora/features/shared/auth/presentation/controller/login_controller.dart';
 import 'package:priora/features/shared/auth/presentation/widgets/login_form.dart';
+import 'package:priora/features/shared/auth/presentation/widgets/login_header.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         SizedBox(height: size.height * 0.14),
                         // Logo & Slogan text
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

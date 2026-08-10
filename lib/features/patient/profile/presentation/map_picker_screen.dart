@@ -1,27 +1,27 @@
-import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart' as geo;
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:latlong2/latlong.dart';
 
 class MapPickerScreen extends StatefulWidget {
-  final double initialLatitude;
-  final double initialLongitude;
-
   const MapPickerScreen({
-    super.key,
     required this.initialLatitude,
     required this.initialLongitude,
+    super.key,
   });
+  final double initialLatitude;
+  final double initialLongitude;
 
   @override
   State<MapPickerScreen> createState() => _MapPickerScreenState();
 }
 
 class _MapPickerScreenState extends State<MapPickerScreen> {
-  MapboxMap? _mapboxMap;
+  final MapController _mapController = MapController();
   late double _selectedLatitude;
   late double _selectedLongitude;
+  bool _mapReady = false;
 
   final _searchController = TextEditingController();
   List<dynamic> _searchResults = [];
@@ -52,23 +52,23 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       _searching = true;
     });
     try {
-      final token = dotenv.env['MAPBOX_DOWNLOADS_TOKEN'] ?? '';
-      final url =
-          'https://api.mapbox.com/geocoding/v5/mapbox.places/${Uri.encodeComponent(query)}.json';
-      final response = await Dio().get(
-        url,
+      // Búsqueda de lugares con Nominatim (OpenStreetMap), sin API key.
+      final response = await Dio().get<dynamic>(
+        'https://nominatim.openstreetmap.org/search',
         queryParameters: {
-          'access_token': token,
-          'country': 'pe',
+          'q': query,
+          'format': 'json',
+          'countrycodes': 'pe',
           'limit': 5,
-          'language': 'es',
+          'accept-language': 'es',
         },
+        options: Options(headers: {'User-Agent': 'priora-mobile-app'}),
       );
 
       if (response.statusCode == 200 && response.data != null) {
-        final features = response.data['features'] as List<dynamic>? ?? [];
+        final results = response.data as List<dynamic>? ?? [];
         setState(() {
-          _searchResults = features;
+          _searchResults = results;
         });
       }
     } catch (e) {
@@ -87,9 +87,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       _searchResults = [];
       _searchController.clear();
     });
-    _mapboxMap?.setCamera(
-      CameraOptions(center: Point(coordinates: Position(lng, lat)), zoom: 15.0),
-    );
+    if (_mapReady) {
+      _mapController.move(LatLng(lat, lng), 15);
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -97,13 +97,12 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       _gettingMyLocation = true;
     });
     try {
-      bool serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await geo.Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw Exception('Los servicios de ubicación están desactivados.');
       }
 
-      geo.LocationPermission permission =
-          await geo.Geolocator.checkPermission();
+      var permission = await geo.Geolocator.checkPermission();
       if (permission == geo.LocationPermission.denied) {
         permission = await geo.Geolocator.requestPermission();
         if (permission == geo.LocationPermission.denied) {
@@ -117,7 +116,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
         );
       }
 
-      geo.Position position = await geo.Geolocator.getCurrentPosition(
+      final position = await geo.Geolocator.getCurrentPosition(
         desiredAccuracy: geo.LocationAccuracy.high,
       );
       _goToLocation(position.latitude, position.longitude);
@@ -169,27 +168,30 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            MapWidget(
-              key: const ValueKey("mapPicker"),
-              cameraOptions: CameraOptions(
-                center: Point(
-                  coordinates: Position(_selectedLongitude, _selectedLatitude),
-                ),
-                zoom: 15.0,
-              ),
-              onMapCreated: (MapboxMap mapboxMap) {
-                _mapboxMap = mapboxMap;
-              },
-              onCameraChangeListener: (event) {
-                _mapboxMap?.getCameraState().then((state) {
-                  final center = state.center;
-                  final pos = center.coordinates;
+            FlutterMap(
+              key: const ValueKey('mapPicker'),
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: LatLng(_selectedLatitude, _selectedLongitude),
+                initialZoom: 15,
+                onMapReady: () {
+                  _mapReady = true;
+                },
+                onPositionChanged: (camera, hasGesture) {
+                  final center = camera.center;
                   setState(() {
-                    _selectedLatitude = pos.lat.toDouble();
-                    _selectedLongitude = pos.lng.toDouble();
+                    _selectedLatitude = center.latitude;
+                    _selectedLongitude = center.longitude;
                   });
-                });
-              },
+                },
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.dope.priora',
+                  maxZoom: 19,
+                ),
+              ],
             ),
 
             // Static Center Pin Marker (Uber style)
@@ -221,7 +223,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
+                          color: Colors.black.withValues(alpha: 0.08),
                           blurRadius: 16,
                           offset: const Offset(0, 4),
                         ),
@@ -258,7 +260,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                                 width: 20,
                                 height: 20,
                                 child: Padding(
-                                  padding: EdgeInsets.all(12.0),
+                                  padding: EdgeInsets.all(12),
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Color(0xFF0256C2),
@@ -286,7 +288,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 16,
                             offset: const Offset(0, 4),
                           ),
@@ -300,8 +302,13 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                             const Divider(color: Color(0xFFF1F5F9), height: 1),
                         itemBuilder: (context, index) {
                           final place = _searchResults[index];
-                          final name = place['place_name']?.toString() ?? '';
-                          final coords = place['center'] as List<dynamic>?;
+                          final name = place['display_name']?.toString() ?? '';
+                          final lat = double.tryParse(
+                            place['lat']?.toString() ?? '',
+                          );
+                          final lon = double.tryParse(
+                            place['lon']?.toString() ?? '',
+                          );
 
                           return ListTile(
                             leading: const Icon(
@@ -319,10 +326,8 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                               overflow: TextOverflow.ellipsis,
                             ),
                             onTap: () {
-                              if (coords != null && coords.length >= 2) {
-                                final lng = coords[0] as double;
-                                final lat = coords[1] as double;
-                                _goToLocation(lat, lng);
+                              if (lat != null && lon != null) {
+                                _goToLocation(lat, lon);
                               }
                             },
                           );
