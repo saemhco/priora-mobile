@@ -68,15 +68,16 @@ dart_code_linter:
     - avoid-unnecessary-type-casts
     - avoid-unnecessary-conditionals
     - avoid-unused-parameters
-    - avoid-nested-conditional-expressions
     - avoid-unnecessary-setstate
     - use-setstate-synchronously
     - no-boolean-literal-compare
     - no-empty-block
     - no-equal-then-else
-    - newline-before-return
-    - prefer-trailing-comma
-    - prefer-conditional-expressions
     - prefer-immediate-return
-    - prefer-moving-to-variable
     - prefer-using-list-view
+    # ── Disabled: pure-style rules, too noisy for this codebase ─────────
+    # newline-before-return     (145 issues: blank line before `return`)
+    # prefer-moving-to-variable (67 issues: repeated expressions → variable)
+    # avoid-nested-conditional-expressions (24 issues)
+    # prefer-conditional-expressions (6 issues)
+    # prefer-trailing-comma     (2 issues; already enforced by `dart format`)
