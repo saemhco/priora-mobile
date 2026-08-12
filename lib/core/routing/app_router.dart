@@ -135,14 +135,11 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/create-place',
       pageBuilder: (context, state) {
-        final valid = state.extra is Place;
-        if (!valid) {
-          return throw Exception();
-        }
+        final place = state.extra is Place ? state.extra! as Place : null;
 
         return _buildTransitionPage(
           key: state.pageKey,
-          child: CreatePlaceScreen(place: state.extra! as Place),
+          child: CreatePlaceScreen(place: place),
         );
       },
     ),
@@ -156,17 +153,13 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/edit-doctor-profile',
       pageBuilder: (context, state) {
-        final valid = state.extra is DoctorProfileCubit;
-
-        if (!valid) {
-          return throw Exception();
-        }
+        final cubit = state.extra is DoctorProfileCubit
+            ? state.extra! as DoctorProfileCubit
+            : null;
 
         return _buildTransitionPage(
           key: state.pageKey,
-          child: EditDoctorProfileScreen(
-            cubit: state.extra! as DoctorProfileCubit,
-          ),
+          child: EditDoctorProfileScreen(cubit: cubit),
         );
       },
     ),

@@ -27,7 +27,7 @@ class _CreateBlockScreenState extends State<CreateBlockScreen> {
   late final CreateBlockController _controller;
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
 
     final authState = context.read<AuthBloc>().state;
@@ -36,10 +36,10 @@ class _CreateBlockScreenState extends State<CreateBlockScreen> {
         : '';
     _controller = CreateBlockController(
       repository: getIt<AgendaRepository>(),
-      placesCubit: context.read<PlacesCubit>(),
+      placesCubit: getIt<PlacesCubit>(),
       accessToken: accessToken,
     );
-    await _controller.loadPlaces();
+    _controller.loadPlaces();
   }
 
   @override

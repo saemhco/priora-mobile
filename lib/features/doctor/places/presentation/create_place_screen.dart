@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:priora/core/di/injection.dart';
 import 'package:priora/features/doctor/places/domain/models/place.dart';
 import 'package:priora/features/doctor/places/presentation/controller/create_place_controller.dart';
 import 'package:priora/features/doctor/places/presentation/controller/places_cubit.dart';
@@ -35,7 +36,7 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
           ? authState.accessToken
           : '';
       _controller = CreatePlaceController(
-        placesCubit: context.read<PlacesCubit>(),
+        placesCubit: getIt<PlacesCubit>(),
         accessToken: accessToken,
         place: widget.place,
       );
@@ -77,78 +78,81 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: _controller!,
-      builder: (context, child) {
-        final isEditing = _controller!.isEditing;
-        return Scaffold(
-          backgroundColor: const Color(0xFFF8FAFC),
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: Color(0xFF1E293B),
-                size: 20,
+    return BlocProvider<PlacesCubit>.value(
+      value: getIt<PlacesCubit>(),
+      child: ListenableBuilder(
+        listenable: _controller!,
+        builder: (context, child) {
+          final isEditing = _controller!.isEditing;
+          return Scaffold(
+            backgroundColor: const Color(0xFFF8FAFC),
+            appBar: AppBar(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Color(0xFF1E293B),
+                  size: 20,
+                ),
+                onPressed: () => context.pop(),
               ),
-              onPressed: () => context.pop(),
             ),
-          ),
-          body: SafeArea(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          isEditing
-                              ? 'Editar lugar de atención'
-                              : 'Nuevo lugar de atención',
-                          style: const TextStyle(
-                            color: Color(0xFF1E293B),
-                            fontSize: 26,
-                            fontWeight: FontWeight.w800,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            isEditing
+                                ? 'Editar lugar de atención'
+                                : 'Nuevo lugar de atención',
+                            style: const TextStyle(
+                              color: Color(0xFF1E293B),
+                              fontSize: 26,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          isEditing
-                              ? 'Modifica los datos del centro médico o consultorio.'
-                              : 'Complete los datos para registrar un nuevo centro médico o consultorio.',
-                          style: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 14,
+                          const SizedBox(height: 4),
+                          Text(
+                            isEditing
+                                ? 'Modifica los datos del centro médico o consultorio.'
+                                : 'Complete los datos para registrar un nuevo centro médico o consultorio.',
+                            style: const TextStyle(
+                              color: Color(0xFF64748B),
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  CreatePlaceBanner(isEditing: isEditing),
-                  const SizedBox(height: 24),
-                  CreatePlaceForm(
-                    controller: _controller!,
-                    formKey: _formKey,
-                  ),
-                  const SizedBox(height: 24),
-                  CreatePlaceMapButton(controller: _controller!),
-                  const SizedBox(height: 32),
-                  CreatePlaceActionButtons(
-                    controller: _controller!,
-                    onSave: _handleSave,
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                    const SizedBox(height: 16),
+                    CreatePlaceBanner(isEditing: isEditing),
+                    const SizedBox(height: 24),
+                    CreatePlaceForm(
+                      controller: _controller!,
+                      formKey: _formKey,
+                    ),
+                    const SizedBox(height: 24),
+                    CreatePlaceMapButton(controller: _controller!),
+                    const SizedBox(height: 32),
+                    CreatePlaceActionButtons(
+                      controller: _controller!,
+                      onSave: _handleSave,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }
