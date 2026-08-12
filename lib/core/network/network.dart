@@ -51,10 +51,11 @@ class AuthInterceptor extends Interceptor {
     final requestPath = err.requestOptions.path;
 
     // If this is already a retry or an auth endpoint → don't retry, logout
-    if (err.requestOptions.extra['isRetry'] == true ||
+    final isRetry = err.requestOptions.extra['isRetry'] == true;
+    if (isRetry ||
         requestPath.contains('/auth/refresh') ||
         requestPath.contains('/auth/login')) {
-      if (err.requestOptions.extra['isRetry'] == true) {
+      if (isRetry) {
         await _clearTokensAndLogout();
       }
 
@@ -78,6 +79,7 @@ class AuthInterceptor extends Interceptor {
           handler: handler,
         ),
       );
+
       return;
     }
 
@@ -96,7 +98,7 @@ class AuthInterceptor extends Interceptor {
         err.requestOptions.extra['isRetry'] = true;
 
         try {
-          final retryResponse = await dio.fetch<dynamic>(err.requestOptions);
+          final retryResponse = await dio.fetch<Object?>(err.requestOptions);
           handler.resolve(retryResponse);
         } catch (retryError) {
           // Si el reintento también falla por autenticación (401) → logout.
@@ -108,6 +110,7 @@ class AuthInterceptor extends Interceptor {
           if (retryStatus == 401) {
             await _clearTokensAndLogout();
             _rejectPendingRequests(err);
+
             return;
           }
           _rejectPendingRequests(
@@ -118,6 +121,7 @@ class AuthInterceptor extends Interceptor {
           } else {
             handler.next(err);
           }
+
           return;
         }
 
@@ -149,7 +153,7 @@ class AuthInterceptor extends Interceptor {
       pending.requestOptions.headers['Authorization'] = 'Bearer $newToken';
       pending.requestOptions.extra['isRetry'] = true;
       try {
-        final response = await dio.fetch<dynamic>(pending.requestOptions);
+        final response = await dio.fetch<Object?>(pending.requestOptions);
         pending.handler.resolve(response);
       } catch (e) {
         pending.handler.next(
@@ -205,11 +209,14 @@ class AuthInterceptor extends Interceptor {
 
           return true;
         }
+
         return false;
       }
+
       return false;
     } catch (e) {
       debugPrint('Token refresh request failed: $e');
+
       return false;
     }
   }
@@ -296,9 +303,9 @@ class CurlInterceptor extends Interceptor {
         if (err.message != null) {
           print('Error Message: ${err.message}');
         }
-        if (response?.data != null) {
+        final data = response?.data;
+        if (data != null) {
           print('Body:');
-          final data = response!.data;
           if (data is Map || data is List) {
             const encoder = JsonEncoder.withIndent('  ');
             _printLog(encoder.convert(data));
@@ -320,6 +327,7 @@ class CurlInterceptor extends Interceptor {
       if (kDebugMode) {
         print(message);
       }
+
       return;
     }
 

@@ -35,6 +35,16 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Prepare environment file
+        # `.env` is gitignored (local secrets) but is declared as an asset in
+        # pubspec.yaml, so the analyzer warns when the file is missing in CI.
+        # Copy the committed example; the app falls back to default values
+        # when variables are empty.
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+
       - name: Analyze (very_good_analysis)
         # 200+ strict rules inherited from very_good_analysis
         # (superset of flutter_lints). Must report zero issues.

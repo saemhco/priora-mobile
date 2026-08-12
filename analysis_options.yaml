@@ -13,11 +13,8 @@
 include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
-  # Legacy plugin registration for dart_code_linter (used by IDEs).
-  # NOTE: `flutter analyze` / `dart analyze` CLI do NOT load analyzer plugins;
+  # NOTE: `flutter analyze` / `dart analyze` CLI do NOT load analyzer plugins.
   # dart_code_linter must be run via its own CLI, see PROJECT_RULES.md.
-  plugins:
-    - dart_code_linter
 
   exclude:
     - build/**
