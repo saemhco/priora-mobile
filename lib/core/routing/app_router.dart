@@ -135,7 +135,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/create-place',
       pageBuilder: (context, state) {
-        final place = state.extra is Place ? state.extra! as Place : null;
+        final place = state.extra as Place?;
 
         return _buildTransitionPage(
           key: state.pageKey,
@@ -153,9 +153,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/edit-doctor-profile',
       pageBuilder: (context, state) {
-        final cubit = state.extra is DoctorProfileCubit
-            ? state.extra! as DoctorProfileCubit
-            : null;
+        final cubit = state.extra as DoctorProfileCubit?;
 
         return _buildTransitionPage(
           key: state.pageKey,

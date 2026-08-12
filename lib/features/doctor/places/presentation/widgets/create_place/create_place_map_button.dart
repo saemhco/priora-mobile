@@ -5,7 +5,8 @@ import 'package:priora/features/doctor/places/presentation/controller/create_pla
 /// Button to select the location of the place on the map.
 class CreatePlaceMapButton extends StatelessWidget {
   const CreatePlaceMapButton({
-    required this.controller, super.key,
+    required this.controller,
+    super.key,
   });
 
   final CreatePlaceController controller;

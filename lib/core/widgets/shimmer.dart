@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 /// loading skeletons across the app (shared/reusable widget).
 class Shimmer extends StatefulWidget {
   const Shimmer({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.duration = const Duration(milliseconds: 1200),
     this.begin = 0.35,
     this.end = 0.85,

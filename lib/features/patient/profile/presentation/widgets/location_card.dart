@@ -12,7 +12,7 @@ class LocationCard extends StatelessWidget {
     final lng = profile?.longitude;
     final hasLocation = lat != null && lng != null;
 
-    final locationText = hasLocation 
+    final locationText = hasLocation
         ? 'Ubicación seleccionada (${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)})'
         : 'No tiene ubicación registrada';
 

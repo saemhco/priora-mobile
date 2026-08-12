@@ -5,7 +5,9 @@ import 'package:priora/features/doctor/appointments/presentation/widgets/appoint
 /// List of appointments with empty and pull-to-refresh status.
 class AppointmentsList extends StatelessWidget {
   const AppointmentsList({
-    required this.appointments, required this.onRefresh, super.key,
+    required this.appointments,
+    required this.onRefresh,
+    super.key,
   });
 
   final List<DoctorAppointment> appointments;

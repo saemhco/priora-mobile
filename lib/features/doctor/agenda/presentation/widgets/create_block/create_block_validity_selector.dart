@@ -5,7 +5,8 @@ import 'package:priora/features/doctor/agenda/presentation/widgets/create_block/
 /// Selector de vigencia del formulario de bloque: ilimitada o rango de fechas.
 class CreateBlockValiditySelector extends StatelessWidget {
   const CreateBlockValiditySelector({
-    required this.controller, super.key,
+    required this.controller,
+    super.key,
   });
 
   final CreateBlockController controller;

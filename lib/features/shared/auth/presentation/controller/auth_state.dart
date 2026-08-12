@@ -11,7 +11,6 @@ class AuthLoading extends AuthState {
 }
 
 class AuthAuthenticated extends AuthState {
-
   const AuthAuthenticated({
     required this.role,
     required this.accessToken,
@@ -33,7 +32,6 @@ class AuthUnauthenticated extends AuthState {
 }
 
 class AuthError extends AuthState {
-
   const AuthError(this.message);
   final String message;
 }

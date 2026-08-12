@@ -3,14 +3,18 @@ import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 
 class PersonalInfoSection extends StatelessWidget {
-
   const PersonalInfoSection({
-    required this.controller, required this.isLoading, super.key,
+    required this.controller,
+    required this.isLoading,
+    super.key,
   });
   final CompleteProfileController controller;
   final bool isLoading;
 
-  InputDecoration _buildInputDecoration({required String hintText, Widget? suffixIcon}) {
+  InputDecoration _buildInputDecoration({
+    required String hintText,
+    Widget? suffixIcon,
+  }) {
     return InputDecoration(
       hintText: hintText,
       hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
@@ -58,7 +62,11 @@ class PersonalInfoSection extends StatelessWidget {
             children: [
               const Row(
                 children: [
-                  Icon(Icons.person_outline, color: Color(0xFF0256C2), size: 20),
+                  Icon(
+                    Icons.person_outline,
+                    color: Color(0xFF0256C2),
+                    size: 20,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Información Personal',
@@ -84,9 +92,8 @@ class PersonalInfoSection extends StatelessWidget {
               TextFormField(
                 controller: controller.nombreController,
                 enabled: !isLoading,
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Requerido'
-                    : null,
+                validator: (val) =>
+                    val == null || val.trim().isEmpty ? 'Requerido' : null,
                 style: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
                 decoration: _buildInputDecoration(hintText: 'Ricardo'),
               ),
@@ -104,9 +111,8 @@ class PersonalInfoSection extends StatelessWidget {
               TextFormField(
                 controller: controller.apellidoController,
                 enabled: !isLoading,
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Requerido'
-                    : null,
+                validator: (val) =>
+                    val == null || val.trim().isEmpty ? 'Requerido' : null,
                 style: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
                 decoration: _buildInputDecoration(hintText: 'Díaz'),
               ),
@@ -122,7 +128,10 @@ class PersonalInfoSection extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(16),
@@ -131,9 +140,14 @@ class PersonalInfoSection extends StatelessWidget {
                   child: DropdownButton<String>(
                     value: controller.docType,
                     isExpanded: true,
-                    style: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                        color: Color(0xFF64748B)),
+                    style: const TextStyle(
+                      color: Color(0xFF1E293B),
+                      fontSize: 15,
+                    ),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF64748B),
+                    ),
                     onChanged: isLoading ? null : controller.setDocType,
                     items: controller.docTypes
                         .map(
@@ -161,9 +175,8 @@ class PersonalInfoSection extends StatelessWidget {
                 controller: controller.docNumController,
                 enabled: !isLoading,
                 keyboardType: TextInputType.number,
-                validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Requerido'
-                    : null,
+                validator: (val) =>
+                    val == null || val.trim().isEmpty ? 'Requerido' : null,
                 style: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
                 decoration: _buildInputDecoration(hintText: '70654321'),
               ),
@@ -183,7 +196,10 @@ class PersonalInfoSection extends StatelessWidget {
                 selectorConfig: const SelectorConfig(
                   setSelectorButtonAsPrefixIcon: true,
                 ),
-                selectorTextStyle: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
+                selectorTextStyle: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 15,
+                ),
                 initialValue: controller.initialPhoneNumber,
                 textFieldController: controller.phoneInputController,
                 formatInput: false,
@@ -191,7 +207,10 @@ class PersonalInfoSection extends StatelessWidget {
                 keyboardType: const TextInputType.numberWithOptions(
                   signed: true,
                 ),
-                textStyle: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
+                textStyle: const TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontSize: 15,
+                ),
                 inputDecoration: _buildInputDecoration(hintText: '987654321'),
               ),
               const SizedBox(height: 18),
@@ -212,8 +231,11 @@ class PersonalInfoSection extends StatelessWidget {
                 style: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
                 decoration: _buildInputDecoration(
                   hintText: '15/05/1992',
-                  suffixIcon: const Icon(Icons.calendar_today_outlined,
-                      color: Color(0xFF64748B), size: 18),
+                  suffixIcon: const Icon(
+                    Icons.calendar_today_outlined,
+                    color: Color(0xFF64748B),
+                    size: 18,
+                  ),
                 ),
               ),
             ],

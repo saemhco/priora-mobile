@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 /// Professionals Profile Section Header.
 class DoctorProfileSectionHeader extends StatelessWidget {
   const DoctorProfileSectionHeader({
-    required this.icon, required this.title, super.key,
+    required this.icon,
+    required this.title,
+    super.key,
   });
 
   final IconData icon;

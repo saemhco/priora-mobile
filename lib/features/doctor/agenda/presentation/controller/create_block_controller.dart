@@ -115,7 +115,7 @@ class CreateBlockController extends ChangeNotifier {
   }
 
   /// Valida el formulario y crea el bloque.
-  /// 
+  ///
   /// Retorna `null` si todo fue exitoso; en caso contrario el mensaje de error.
   Future<String?> save() async {
     if (_selectedDays.isEmpty) return 'Selecciona al menos un día';

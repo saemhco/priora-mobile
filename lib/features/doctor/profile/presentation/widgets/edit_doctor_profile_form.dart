@@ -5,7 +5,10 @@ import 'package:priora/features/doctor/profile/presentation/controller/edit_doct
 /// button.
 class EditDoctorProfileForm extends StatelessWidget {
   const EditDoctorProfileForm({
-    required this.controller, required this.formKey, required this.onSave, super.key,
+    required this.controller,
+    required this.formKey,
+    required this.onSave,
+    super.key,
   });
 
   final EditDoctorProfileController controller;

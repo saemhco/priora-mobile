@@ -103,39 +103,44 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     );
     final now = DateTime.now();
 
-    final today = all
-        .where(
-          (a) =>
-              a.dateTimeObj.year == now.year &&
-              a.dateTimeObj.month == now.month &&
-              a.dateTimeObj.day == now.day &&
-              a.status != 'CANCELED',
-        )
-        .toList()
-      ..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
-
-    final upcoming = all
-        .where(
-          (a) =>
-              a.dateTimeObj.isAfter(now) &&
-              a.status != 'CANCELED' &&
-              !(a.dateTimeObj.year == now.year &&
+    final today =
+        all
+            .where(
+              (a) =>
+                  a.dateTimeObj.year == now.year &&
                   a.dateTimeObj.month == now.month &&
-                  a.dateTimeObj.day == now.day),
-        )
-        .toList()
-      ..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
+                  a.dateTimeObj.day == now.day &&
+                  a.status != 'CANCELED',
+            )
+            .toList()
+          ..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
 
-    final past = all
-        .where(
-          (a) =>
-              a.dateTimeObj.isBefore(now) &&
-              !(a.dateTimeObj.year == now.year &&
-                  a.dateTimeObj.month == now.month &&
-                  a.dateTimeObj.day == now.day),
-        )
-        .toList()
-      ..sort((a, b) => b.dateTimeObj.compareTo(a.dateTimeObj)); // más recientes primero
+    final upcoming =
+        all
+            .where(
+              (a) =>
+                  a.dateTimeObj.isAfter(now) &&
+                  a.status != 'CANCELED' &&
+                  !(a.dateTimeObj.year == now.year &&
+                      a.dateTimeObj.month == now.month &&
+                      a.dateTimeObj.day == now.day),
+            )
+            .toList()
+          ..sort((a, b) => a.dateTimeObj.compareTo(b.dateTimeObj));
+
+    final past =
+        all
+            .where(
+              (a) =>
+                  a.dateTimeObj.isBefore(now) &&
+                  !(a.dateTimeObj.year == now.year &&
+                      a.dateTimeObj.month == now.month &&
+                      a.dateTimeObj.day == now.day),
+            )
+            .toList()
+          ..sort(
+            (a, b) => b.dateTimeObj.compareTo(a.dateTimeObj),
+          ); // más recientes primero
 
     emit(
       state.copyWith(

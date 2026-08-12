@@ -35,9 +35,7 @@ class LocationFilterSection extends StatelessWidget {
               return const LocationSelectorSkeleton();
             }
 
-            final places = state is PlacesLoaded
-                ? state.places
-                : <Place>[];
+            final places = state is PlacesLoaded ? state.places : <Place>[];
 
             String label;
             IconData icon;

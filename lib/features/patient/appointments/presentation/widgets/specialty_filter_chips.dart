@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class SpecialtyFilterChips extends StatelessWidget {
-
   const SpecialtyFilterChips({
     required this.specialties,
     required this.selectedSpecialty,
@@ -32,15 +31,21 @@ class SpecialtyFilterChips extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? const Color(0xFF0E5FD9) : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
+                    color: isSelected
+                        ? const Color(0xFF0E5FD9)
+                        : const Color(0xFFE2E8F0).withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: Text(
                     specialty,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : const Color(0xFF64748B),
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF64748B),
                       fontSize: 14,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ),

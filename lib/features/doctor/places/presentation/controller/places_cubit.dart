@@ -76,8 +76,9 @@ class PlacesCubit extends Cubit<PlacesState> {
       );
       final currentState = state;
       if (currentState is PlacesLoaded) {
-        final updatedPlaces =
-            currentState.places.where((p) => p.id != placeId).toList();
+        final updatedPlaces = currentState.places
+            .where((p) => p.id != placeId)
+            .toList();
         emit(PlacesLoaded(updatedPlaces));
       }
       return true;

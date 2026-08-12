@@ -11,7 +11,7 @@ class CreatePlaceController extends ChangeNotifier {
     required this._placesCubit,
     required this._accessToken,
     Place? place,
-  })  : _place = place {
+  }) : _place = place {
     _nameController = TextEditingController(text: place?.name ?? '');
     _addressController = TextEditingController(text: place?.address ?? '');
     _selectedDepartment = place?.department;

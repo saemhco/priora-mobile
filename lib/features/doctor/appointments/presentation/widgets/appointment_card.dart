@@ -80,10 +80,12 @@ class AppointmentCard extends StatelessWidget {
     final isCompleted = appointment.status == 'COMPLETED';
     final isCanceled = appointment.status == 'CANCELED';
     final isPast = isCompleted || isCanceled;
-    final textColor =
-        isPast ? const Color(0xFF94A3B8) : const Color(0xFF1E293B);
-    final subtitleColor =
-        isPast ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
+    final textColor = isPast
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF1E293B);
+    final subtitleColor = isPast
+        ? const Color(0xFFCBD5E1)
+        : const Color(0xFF64748B);
     final avatarColor = avatarColorFor(appointment.patient.fullName);
 
     return Container(
@@ -195,8 +197,7 @@ class AppointmentCard extends StatelessWidget {
 
   Widget _buildModalityChip() {
     final isVirtual = appointment.isVirtual;
-    final color =
-        isVirtual ? const Color(0xFF059669) : const Color(0xFF64748B);
+    final color = isVirtual ? const Color(0xFF059669) : const Color(0xFF64748B);
     final icon = isVirtual ? Icons.videocam_rounded : Icons.map_rounded;
     final label = isVirtual ? 'Virtual' : 'Presencial';
     return Container(

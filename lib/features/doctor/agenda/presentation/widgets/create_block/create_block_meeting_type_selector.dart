@@ -5,7 +5,8 @@ import 'package:priora/features/doctor/agenda/presentation/widgets/create_block/
 /// Selector of the type of attention of the block: virtual or face-to-face.
 class CreateBlockMeetingTypeSelector extends StatelessWidget {
   const CreateBlockMeetingTypeSelector({
-    required this.controller, super.key,
+    required this.controller,
+    super.key,
   });
 
   final CreateBlockController controller;

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 class PatientNavItem extends StatelessWidget {
-
   const PatientNavItem({
-    required this.index, required this.icon, required this.label, required this.isSelected, required this.onTap, super.key,
+    required this.index,
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    super.key,
   });
   final int index;
   final IconData icon;

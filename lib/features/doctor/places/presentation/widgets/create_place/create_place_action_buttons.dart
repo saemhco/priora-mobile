@@ -5,7 +5,9 @@ import 'package:priora/features/doctor/places/presentation/controller/create_pla
 /// Place form action buttons: save and cancel.
 class CreatePlaceActionButtons extends StatelessWidget {
   const CreatePlaceActionButtons({
-    required this.controller, required this.onSave, super.key,
+    required this.controller,
+    required this.onSave,
+    super.key,
   });
 
   final CreatePlaceController controller;

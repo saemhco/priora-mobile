@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:priora/features/doctor/places/domain/models/place.dart';
 
 class PlaceCard extends StatelessWidget {
-
   const PlaceCard({
-    required this.place, super.key,
+    required this.place,
+    super.key,
     this.onEdit,
     this.onDelete,
   });
@@ -31,7 +31,11 @@ class PlaceCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.local_hospital_rounded, color: Color(0xFF0256C2), size: 26),
+            child: const Icon(
+              Icons.local_hospital_rounded,
+              color: Color(0xFF0256C2),
+              size: 26,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -50,16 +54,24 @@ class PlaceCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                GestureDetector(
-                  onTap: onEdit,
-                  child: const Icon(Icons.edit_rounded, color: Color(0xFF0256C2), size: 20),
-                ),
+                    GestureDetector(
+                      onTap: onEdit,
+                      child: const Icon(
+                        Icons.edit_rounded,
+                        color: Color(0xFF0256C2),
+                        size: 20,
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 16, color: Color(0xFF64748B)),
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: Color(0xFF64748B),
+                    ),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -72,7 +84,11 @@ class PlaceCard extends StatelessWidget {
                     ),
                     GestureDetector(
                       onTap: onDelete,
-                      child: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 20),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFEF4444),
+                        size: 20,
+                      ),
                     ),
                   ],
                 ),

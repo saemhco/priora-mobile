@@ -4,7 +4,9 @@ import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.da
 import 'package:priora/features/shared/auth/presentation/controller/auth_event.dart';
 
 class LoginController extends ChangeNotifier {
-  final emailController = TextEditingController(text: 'profesional2@vitalink.com');
+  final emailController = TextEditingController(
+    text: 'profesional2@vitalink.com',
+  );
   final passwordController = TextEditingController(text: 'password');
   bool obscurePassword = true;
 

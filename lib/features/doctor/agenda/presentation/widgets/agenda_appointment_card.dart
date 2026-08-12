@@ -5,7 +5,8 @@ import 'package:priora/features/doctor/appointments/domain/models/doctor_appoint
 /// Card of a doctor's appointment for the "Today's Appointments" section.
 class AgendaAppointmentCard extends StatelessWidget {
   const AgendaAppointmentCard({
-    required this.appointment, super.key,
+    required this.appointment,
+    super.key,
     this.compact = false,
   });
 

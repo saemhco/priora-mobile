@@ -1,0 +1,93 @@
+name: CI
+
+# Runs on every pull request and on pushes to the default branch, enforcing the
+# project's lint, formatting, and architecture rules defined in:
+#   - analysis_options.yaml (very_good_analysis + dart_code_linter)
+#   - PROJECT_RULES.md (architectural guidelines)
+"on":
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  lint:
+    name: Lint, Format & Architecture
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        # Full history is needed to diff the PR against its base branch and
+        # analyze only the files changed by the pull request.
+        with:
+          fetch-depth: 0
+
+      - name: Extract Flutter version from .fvmrc
+        id: fvm
+        run: |
+          echo "flutter_version=$(sed -n 's/.*"flutter"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' .fvmrc)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.flutter_version }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze (very_good_analysis)
+        # 200+ strict rules inherited from very_good_analysis
+        # (superset of flutter_lints). Must report zero issues.
+        run: flutter analyze
+
+      - name: Check formatting (dart format)
+        run: dart format --set-exit-if-changed lib test
+
+      - name: Check pending auto-fixes (dart fix)
+        # Ensures contributors ran `dart fix --apply` locally.
+        # Exits non-zero when fixes are available.
+        run: dart fix --dry-run
+
+      - name: Architecture rules on changed files (dart_code_linter)
+        # `flutter analyze` does NOT load analyzer plugins, so the architecture
+        # rules of dart_code_linter (see PROJECT_RULES.md) are enforced through
+        # its own CLI. Only the files changed by this PR are analyzed, allowing
+        # legacy violations to be fixed incrementally while new code must comply.
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="HEAD~1"
+          fi
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" -- lib/ | grep '\.dart$' || true)
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No Dart files under lib/ changed — skipping dart_code_linter."
+          else
+            echo "Analyzing changed files:"
+            echo "$CHANGED_FILES"
+            dart run dart_code_linter:metrics analyze $CHANGED_FILES
+          fi
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Flutter version from .fvmrc
+        id: fvm
+        run: |
+          echo "flutter_version=$(sed -n 's/.*"flutter"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' .fvmrc)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ steps.fvm.outputs.flutter_version }}
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test

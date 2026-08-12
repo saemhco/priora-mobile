@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class NotificationBanner extends StatelessWidget {
-
   const NotificationBanner({
     required this.enabled,
     required this.onTap,
@@ -55,7 +54,9 @@ class NotificationBanner extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                enabled ? Icons.notifications_active : Icons.notifications_none_rounded,
+                enabled
+                    ? Icons.notifications_active
+                    : Icons.notifications_none_rounded,
                 color: const Color(0xFF0E5FD9),
                 size: 22,
               ),

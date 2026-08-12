@@ -99,7 +99,9 @@ class EditDoctorProfileController extends ChangeNotifier {
 
     _isSubmitting = false;
     if (!result.success) {
-      _submitError = result.message ?? 'Error al actualizar el perfil. Inténtalo de nuevo.';
+      _submitError =
+          result.message ??
+          'Error al actualizar el perfil. Inténtalo de nuevo.';
     }
     notifyListeners();
     return result.success;

@@ -6,7 +6,9 @@ import 'package:priora/features/doctor/appointments/presentation/widgets/appoint
 /// Bottom sheet to record the attention of an appointment.
 class RegisterAttendanceSheet extends StatefulWidget {
   const RegisterAttendanceSheet({
-    required this.appointment, required this.onRegister, super.key,
+    required this.appointment,
+    required this.onRegister,
+    super.key,
   });
 
   final DoctorAppointment appointment;
@@ -49,7 +51,8 @@ class _RegisterAttendanceSheetState extends State<RegisterAttendanceSheet> {
       setState(() {
         _isSubmitting = false;
         _errorMessage =
-            result.message ?? 'Error al registrar la atención. Inténtalo de nuevo.';
+            result.message ??
+            'Error al registrar la atención. Inténtalo de nuevo.';
       });
     }
   }
@@ -62,8 +65,8 @@ class _RegisterAttendanceSheetState extends State<RegisterAttendanceSheet> {
     final noteColor = _note.isEmpty
         ? const Color(0xFF94A3B8)
         : _isValid
-            ? const Color(0xFF059669)
-            : const Color(0xFFEF4444);
+        ? const Color(0xFF059669)
+        : const Color(0xFFEF4444);
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),

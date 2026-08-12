@@ -45,9 +45,7 @@ class DoctorProfilePlacesSection extends StatelessWidget {
                 );
               }
 
-              final places = state is PlacesLoaded
-                  ? state.places
-                  : <Place>[];
+              final places = state is PlacesLoaded ? state.places : <Place>[];
               if (places.isEmpty) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(vertical: 12),
