@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
 
 class PatientNavItem extends StatelessWidget {
+
+  const PatientNavItem({
+    required this.index, required this.icon, required this.label, required this.isSelected, required this.onTap, super.key,
+  });
   final int index;
   final IconData icon;
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
-
-  const PatientNavItem({
-    super.key,
-    required this.index,
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {

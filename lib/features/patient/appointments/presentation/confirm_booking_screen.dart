@@ -1,20 +1,22 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:priora/features/patient/appointments/domain/models/doctor.dart';
+import 'package:priora/features/patient/appointments/domain/models/patient_appointment.dart';
+import 'package:priora/features/patient/appointments/presentation/controller/appointments_controller.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
-import 'package:priora/features/patient/appointments/controller/appointments_controller.dart';
 
 class ConfirmBookingScreen extends StatefulWidget {
-  final DoctorModel doctor;
-  final String slot;
-  final AppointmentsController controller;
-  final PatientNavigationCubit navigationCubit;
-
   const ConfirmBookingScreen({
-    super.key,
     required this.doctor,
     required this.slot,
     required this.controller,
     required this.navigationCubit,
+    super.key,
   });
+  final Doctor doctor;
+  final String slot;
+  final AppointmentsController controller;
+  final PatientNavigationCubit navigationCubit;
 
   @override
   State<ConfirmBookingScreen> createState() => _ConfirmBookingScreenState();
@@ -101,14 +103,14 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     }
   }
 
-  Map<String, dynamic>? _existingAppointmentConflict;
-  bool _bypassDuplicateCheck = false;
+  PatientAppointment? _existingAppointmentConflict;
+  final bool _bypassDuplicateCheck = false;
 
   Future<void> _handleConfirm() async {
     if (!_bypassDuplicateCheck) {
-      Map<String, dynamic>? conflict;
+      PatientAppointment? conflict;
       for (final app in widget.controller.myAppointments) {
-        if (app['doctorSpecialty']?.toString().trim().toLowerCase() ==
+        if (app.doctorSpecialty.trim().toLowerCase() ==
             widget.doctor.specialty.trim().toLowerCase()) {
           conflict = app;
           break;
@@ -127,16 +129,19 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     });
 
     // Show loading spinner
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFF0256C2)),
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF0256C2)),
+        ),
       ),
     );
 
-    final apiMeetingType =
-        _consultationType == 'VIRTUAL' ? 'VIRTUAL' : 'IN_PERSON';
+    final apiMeetingType = _consultationType == 'VIRTUAL'
+        ? 'VIRTUAL'
+        : 'IN_PERSON';
     final result = await widget.controller.bookAppointment(
       doctorId: widget.doctor.id,
       timeSlot: widget.slot,
@@ -155,11 +160,18 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         // El backend confirma la cita duplicada → mostrar la vista de conflicto
         // con la opción de reservar de todos modos.
         setState(() {
-          _existingAppointmentConflict = {
-            'doctorName': widget.doctor.name,
-            'formattedDate': _formatSlotDate(widget.slot),
-            'formattedTime': widget.slot,
-          };
+          _existingAppointmentConflict = PatientAppointment(
+            id: '',
+            doctorId: widget.doctor.id,
+            datetime: '',
+            formattedDate: _formatSlotDate(widget.slot),
+            formattedTime: widget.slot,
+            doctorName: widget.doctor.name,
+            doctorSpecialty: widget.doctor.specialty,
+            doctorAvatar: '',
+            isVirtual: false,
+            status: '',
+          );
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -179,13 +191,11 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
     }
   }
 
-
-
   Widget _buildConflictView() {
     final conflict = _existingAppointmentConflict!;
-    final doctorName = conflict['doctorName'] ?? 'Especialista';
-    final rawDate = conflict['formattedDate']?.toString() ?? '';
-    final rawTime = conflict['formattedTime']?.toString() ?? '';
+    final doctorName = conflict.doctorName;
+    final rawDate = conflict.formattedDate;
+    final rawTime = conflict.formattedTime;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -414,7 +424,7 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 ),
               ),
               const Spacer(),
-             /* SizedBox(
+              /* SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
@@ -485,7 +495,6 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 24),
               const Text(
@@ -514,7 +523,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
+                  border: Border.all(
+                    color: const Color(0xFFF1F5F9),
+                    width: 1.5,
+                  ),
                   boxShadow: const [
                     BoxShadow(
                       color: Color(0x050F172A),
@@ -535,12 +547,16 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             width: 56,
                             height: 56,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: const Color(0xFFEFF6FF),
-                              width: 56,
-                              height: 56,
-                              child: const Icon(Icons.person, color: Color(0xFF3B82F6)),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: const Color(0xFFEFF6FF),
+                                  width: 56,
+                                  height: 56,
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Color(0xFF3B82F6),
+                                  ),
+                                ),
                           ),
                         ),
                         const SizedBox(width: 14),
@@ -558,7 +574,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               ),
                               const SizedBox(height: 4),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFFEFF6FF),
                                   borderRadius: BorderRadius.circular(20),
@@ -589,7 +608,11 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.calendar_today_rounded, color: Color(0xFF0256C2), size: 18),
+                          child: const Icon(
+                            Icons.calendar_today_rounded,
+                            color: Color(0xFF0256C2),
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Column(
@@ -597,12 +620,20 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                           children: [
                             const Text(
                               'FECHA',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF94A3B8),
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               formattedDate,
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF334155),
+                              ),
                             ),
                           ],
                         ),
@@ -618,7 +649,11 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.access_time_rounded, color: Color(0xFF0256C2), size: 18),
+                          child: const Icon(
+                            Icons.access_time_rounded,
+                            color: Color(0xFF0256C2),
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Column(
@@ -626,12 +661,20 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                           children: [
                             const Text(
                               'HORA',
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF94A3B8),
+                              ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               widget.slot,
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF334155),
+                              ),
                             ),
                           ],
                         ),
@@ -647,7 +690,11 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             color: const Color(0xFFF8FAFC),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Icon(Icons.location_on_outlined, color: Color(0xFF0256C2), size: 18),
+                          child: const Icon(
+                            Icons.location_on_outlined,
+                            color: Color(0xFF0256C2),
+                            size: 18,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -656,14 +703,22 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                             children: [
                               const Text(
                                 'MODALIDAD',
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF94A3B8)),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Color(0xFF94A3B8),
+                                ),
                               ),
                               const SizedBox(height: 2),
                               Text(
                                 modalidad,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF334155)),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF334155),
+                                ),
                               ),
                             ],
                           ),
@@ -713,7 +768,10 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFF0256C2), width: 1.5),
+                    side: const BorderSide(
+                      color: Color(0xFF0256C2),
+                      width: 1.5,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -732,14 +790,21 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
 
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFECFDF5),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.info_outline_rounded, color: Color(0xFF059669), size: 20),
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFF059669),
+                      size: 20,
+                    ),
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -970,15 +1035,15 @@ class _ConfirmBookingScreenState extends State<ConfirmBookingScreen> {
                               ),
                             ],
                           ),
-                            const SizedBox(height: 6),
-                            Text(
-                              widget.slot,
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF0F172A),
-                              ),
+                          const SizedBox(height: 6),
+                          Text(
+                            widget.slot,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
                             ),
+                          ),
                         ],
                       ),
                     ),

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:priora/features/shared/auth/controller/complete_profile_controller.dart';
+import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 
 class DemographicsSection extends StatelessWidget {
-  final CompleteProfileController controller;
-  final bool isLoading;
 
   const DemographicsSection({
-    super.key,
-    required this.controller,
-    required this.isLoading,
+    required this.controller, required this.isLoading, super.key,
   });
+  final CompleteProfileController controller;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +15,8 @@ class DemographicsSection extends StatelessWidget {
       listenable: controller,
       builder: (context, child) {
         return Container(
-          margin: const EdgeInsets.only(bottom: 24.0),
-          padding: const EdgeInsets.all(20.0),
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),

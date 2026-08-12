@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class LoginHeader extends StatelessWidget {
-  final double height;
 
-  const LoginHeader({super.key, required this.height});
+  const LoginHeader({required this.height, super.key});
+  final double height;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: height,
       width: double.infinity,
       child: Stack(
@@ -22,8 +22,8 @@ class LoginHeader extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    const Color(0xFF0256C2).withOpacity(0.85),
-                    const Color(0xFF0F172A).withOpacity(0.9),
+                    const Color(0xFF0256C2).withValues(alpha: 0.85),
+                    const Color(0xFF0F172A).withValues(alpha: 0.9),
                   ],
                 ),
               ),

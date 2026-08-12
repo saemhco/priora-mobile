@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:priora/features/patient/profile/controller/edit_profile_controller.dart';
-import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit/profile_cubit.dart';
-import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit/profile_state.dart';
+import 'package:priora/core/widgets/static_map_preview.dart';
+import 'package:priora/features/patient/profile/presentation/controller/edit_profile_controller.dart';
+import 'package:priora/features/patient/profile/presentation/controller/profile_cubit.dart';
+import 'package:priora/features/patient/profile/presentation/controller/profile_state.dart';
+import 'package:priora/features/patient/profile/presentation/widgets/edit_profile_skeleton.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -126,8 +127,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   return SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0,
-                      vertical: 12.0,
+                      horizontal: 20,
+                      vertical: 12,
                     ),
                     child: Form(
                       key: _formKey,
@@ -156,8 +157,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                           // Personal Info Card
                           Container(
-                            margin: const EdgeInsets.only(bottom: 24.0),
-                            padding: const EdgeInsets.all(20.0),
+                            margin: const EdgeInsets.only(bottom: 24),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(24),
@@ -330,18 +331,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 ),
                                 const SizedBox(height: 8),
                                 InternationalPhoneNumberInput(
-                                  onInputChanged: (PhoneNumber number) {
+                                  onInputChanged: (number) {
                                     _controller.setPhoneNumber(number);
                                   },
                                   selectorConfig: const SelectorConfig(
-                                    selectorType:
-                                        PhoneInputSelectorType.DROPDOWN,
-                                    showFlags: true,
-                                    useEmoji: false,
                                     setSelectorButtonAsPrefixIcon: true,
                                   ),
-                                  ignoreBlank: false,
-                                  autoValidateMode: AutovalidateMode.disabled,
                                   selectorTextStyle: const TextStyle(
                                     color: Color(0xFF1E293B),
                                     fontSize: 15,
@@ -354,7 +349,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                   keyboardType:
                                       const TextInputType.numberWithOptions(
                                         signed: true,
-                                        decimal: false,
                                       ),
                                   textStyle: const TextStyle(
                                     color: Color(0xFF1E293B),
@@ -514,8 +508,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                           // Location Card
                           Container(
-                            margin: const EdgeInsets.only(bottom: 24.0),
-                            padding: const EdgeInsets.all(20.0),
+                            margin: const EdgeInsets.only(bottom: 24),
+                            padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(24),
@@ -616,33 +610,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       ),
                                       child: Stack(
                                         children: [
-                                          Center(
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                              child: Image.network(
-                                                'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/${_controller.longitude},${_controller.latitude},14,0/600x300?access_token=${dotenv.env['MAPBOX_DOWNLOADS_TOKEN'] ?? 'mock'}',
-                                                fit: BoxFit.cover,
-                                                width: double.infinity,
-                                                height: double.infinity,
-                                                errorBuilder:
-                                                    (
-                                                      context,
-                                                      error,
-                                                      stackTrace,
-                                                    ) => Container(
-                                                      color: const Color(
-                                                        0xFF334E57,
-                                                      ),
-                                                      child: const Center(
-                                                        child: Icon(
-                                                          Icons.map,
-                                                          color: Colors.white60,
-                                                          size: 40,
-                                                        ),
-                                                      ),
-                                                    ),
-                                              ),
+                                          StaticMapPreview(
+                                            latitude:
+                                                _controller.latitude ??
+                                                -12.046374,
+                                            longitude:
+                                                _controller.longitude ??
+                                                -77.042793,
+                                            height: 180,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
                                             ),
                                           ),
                                           const Center(
@@ -721,188 +698,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             },
           ),
         ),
-      ),
-    );
-  }
-}
-
-class EditProfileSkeleton extends StatefulWidget {
-  const EditProfileSkeleton({super.key});
-
-  @override
-  State<EditProfileSkeleton> createState() => _EditProfileSkeletonState();
-}
-
-class _EditProfileSkeletonState extends State<EditProfileSkeleton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _anim;
-  late Animation<double> _opacity;
-
-  @override
-  void initState() {
-    super.initState();
-    _anim = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    )..repeat(reverse: true);
-    _opacity = Tween<double>(begin: 0.3, end: 0.8).animate(
-      CurvedAnimation(parent: _anim, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _anim.dispose();
-    super.dispose();
-  }
-
-  Widget _block({double height = 16, double? width, double radius = 10}) {
-    return AnimatedBuilder(
-      animation: _opacity,
-      builder: (_, __) => Opacity(
-        opacity: _opacity.value,
-        child: Container(
-          height: height,
-          width: width ?? double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(radius),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _card({required Widget child}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-
-  Widget _fieldSkeleton() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _block(height: 12, width: 100),
-        const SizedBox(height: 8),
-        _block(height: 48, radius: 14),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Avatar + title
-          Center(
-            child: AnimatedBuilder(
-              animation: _opacity,
-              builder: (_, __) => Opacity(
-                opacity: _opacity.value,
-                child: const CircleAvatar(
-                  radius: 44,
-                  backgroundColor: Color(0xFFE2E8F0),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Center(child: _block(height: 14, width: 140)),
-          const SizedBox(height: 24),
-
-          // Card 1: Personal info
-          _card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _block(height: 18, width: 160),
-                const SizedBox(height: 20),
-                _fieldSkeleton(),
-                const SizedBox(height: 18),
-                _fieldSkeleton(),
-                const SizedBox(height: 18),
-                Row(
-                  children: [
-                    Expanded(child: _fieldSkeleton()),
-                    const SizedBox(width: 16),
-                    Expanded(child: _fieldSkeleton()),
-                  ],
-                ),
-                const SizedBox(height: 18),
-                _fieldSkeleton(),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Card 2: Contact info
-          _card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _block(height: 18, width: 140),
-                const SizedBox(height: 20),
-                _fieldSkeleton(),
-                const SizedBox(height: 18),
-                _fieldSkeleton(),
-                const SizedBox(height: 18),
-                _fieldSkeleton(),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Card 3: Gender / health
-          _card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _block(height: 18, width: 160),
-                const SizedBox(height: 20),
-                _fieldSkeleton(),
-                const SizedBox(height: 18),
-                _fieldSkeleton(),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Card 4: Location
-          _card(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _block(height: 18, width: 120),
-                const SizedBox(height: 16),
-                _block(height: 140, radius: 16),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-
-          // Save button placeholder
-          _block(height: 50, radius: 16),
-          const SizedBox(height: 24),
-        ],
       ),
     );
   }

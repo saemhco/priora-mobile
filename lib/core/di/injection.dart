@@ -1,25 +1,36 @@
-import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:get_it/get_it.dart';
 import 'package:priora/core/network/network.dart';
-import 'package:priora/features/shared/auth/data/auth_repository.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/patient/triage/data/triage_repository.dart';
-import 'package:priora/features/patient/appointments/data/appointments_service.dart';
-import 'package:priora/features/patient/appointments/data/appointments_repository.dart';
+import 'package:priora/features/doctor/agenda/data/repositories/agenda_repository.dart';
+import 'package:priora/features/doctor/agenda/data/services/availability_service.dart';
+import 'package:priora/features/doctor/agenda/domain/interfaces/agenda_repository.dart';
+import 'package:priora/features/doctor/appointments/data/repositories/doctor_appointments_repository.dart';
+import 'package:priora/features/doctor/appointments/data/services/doctor_appointments_service.dart';
+import 'package:priora/features/doctor/appointments/domain/interfaces/doctor_appointments_repository.dart';
+import 'package:priora/features/doctor/places/data/repositories/places_repository.dart';
+import 'package:priora/features/doctor/places/data/services/places_service.dart';
+import 'package:priora/features/doctor/places/domain/interfaces/places_repository.dart';
+import 'package:priora/features/doctor/places/presentation/controller/places_cubit.dart';
+import 'package:priora/features/doctor/profile/data/repositories/doctor_profile_repository.dart';
+import 'package:priora/features/doctor/profile/data/services/doctor_profile_service.dart';
+import 'package:priora/features/doctor/profile/domain/interfaces/doctor_profile_repository.dart';
+import 'package:priora/features/patient/appointments/data/repositories/appointments_repository.dart';
+import 'package:priora/features/patient/appointments/data/services/appointments_service.dart';
+import 'package:priora/features/patient/appointments/domain/interfaces/appointments_repository.dart';
+import 'package:priora/features/patient/profile/data/repositories/profile_repository.dart';
+import 'package:priora/features/patient/profile/data/services/profile_service.dart';
+import 'package:priora/features/patient/profile/domain/interfaces/profile_repository.dart';
+import 'package:priora/features/patient/profile/presentation/controller/profile_cubit.dart';
+import 'package:priora/features/patient/triage/data/repositories/triage_repository.dart';
+import 'package:priora/features/patient/triage/data/services/triage_service.dart';
+import 'package:priora/features/patient/triage/domain/interfaces/triage_repository.dart';
+import 'package:priora/features/shared/auth/data/repositories/auth_repository.dart';
+import 'package:priora/features/shared/auth/data/services/auth_service.dart';
+import 'package:priora/features/shared/auth/domain/interfaces/auth_repository.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
 
-import 'package:priora/features/patient/profile/data/profile_service.dart';
-import 'package:priora/features/patient/profile/data/profile_repository.dart';
-import 'package:priora/features/patient/profile/presentation/blocs/profile_cubit/profile_cubit.dart';
 
-import 'package:priora/features/doctor/agenda/data/availability_service.dart';
-import 'package:priora/features/doctor/appointments/data/doctor_appointments_service.dart';
-import 'package:priora/features/doctor/profile/data/doctor_profile_service.dart';
-import 'package:priora/features/doctor/places/controller/places_cubit.dart';
-import 'package:priora/features/doctor/places/data/places_service.dart';
-import 'package:priora/features/doctor/places/data/places_repository.dart';
-
-
-final getIt = GetIt.instance;
+final GetIt getIt = GetIt.instance;
 
 Future<void> initInjection() async {
   // Core
@@ -38,28 +49,43 @@ Future<void> initInjection() async {
   getIt.registerLazySingleton<AvailabilityService>(
     () => AvailabilityService(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<AuthService>(
+    () => AuthService(getIt<Dio>()),
+  );
   getIt.registerLazySingleton<DoctorAppointmentsService>(
     () => DoctorAppointmentsService(getIt<Dio>()),
   );
   getIt.registerLazySingleton<DoctorProfileService>(
     () => DoctorProfileService(getIt<Dio>()),
   );
+  getIt.registerLazySingleton<TriageService>(
+    () => TriageService(getIt<Dio>()),
+  );
 
   // Repositories
   getIt.registerLazySingleton<AuthRepository>(
-    () => AuthRepository(getIt<Dio>()),
+    () => AuthRepositoryImpl(getIt<AuthService>()),
   );
   getIt.registerLazySingleton<TriageRepository>(
-    () => TriageRepository(getIt<Dio>()),
+    () => TriageRepositoryImpl(getIt<TriageService>()),
   );
   getIt.registerLazySingleton<AppointmentsRepository>(
-    () => AppointmentsRepository(getIt<AppointmentsService>()),
+    () => AppointmentsRepositoryImpl(getIt<AppointmentsService>()),
   );
   getIt.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepository(getIt<ProfileService>()),
+    () => ProfileRepositoryImpl(getIt<ProfileService>()),
   );
   getIt.registerLazySingleton<PlacesRepository>(
-    () => PlacesRepository(getIt<PlacesService>()),
+    () => PlacesRepositoryImpl(getIt<PlacesService>()),
+  );
+  getIt.registerLazySingleton<AgendaRepository>(
+    () => AgendaRepositoryImpl(getIt<AvailabilityService>()),
+  );
+  getIt.registerLazySingleton<DoctorAppointmentsRepository>(
+    () => DoctorAppointmentsRepositoryImpl(getIt<DoctorAppointmentsService>()),
+  );
+  getIt.registerLazySingleton<DoctorProfileRepository>(
+    () => DoctorProfileRepositoryImpl(getIt<DoctorProfileService>()),
   );
 
   // Blocs / State Management

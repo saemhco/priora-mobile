@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 class TriageHeader extends StatelessWidget {
-  final int currentStep;
-  final int totalSteps;
-  final String title;
 
   const TriageHeader({
     required this.currentStep,
@@ -11,6 +8,9 @@ class TriageHeader extends StatelessWidget {
     required this.title,
     super.key,
   });
+  final int currentStep;
+  final int totalSteps;
+  final String title;
 
   @override
   Widget build(BuildContext context) {

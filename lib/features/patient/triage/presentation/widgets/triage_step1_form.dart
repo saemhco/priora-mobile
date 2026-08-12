@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_state.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_header.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_input_card.dart';
 
 class TriageStep1Form extends StatefulWidget {
-  final String accessToken;
-  final TriageState state;
 
   const TriageStep1Form({
-    super.key,
-    required this.accessToken,
-    required this.state,
+    required this.accessToken, required this.state, super.key,
   });
+  final String accessToken;
+  final TriageState state;
 
   @override
   State<TriageStep1Form> createState() => _TriageStep1FormState();
@@ -73,10 +72,10 @@ class _TriageStep1FormState extends State<TriageStep1Form> {
         SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.only(
-            left: 20.0,
-            right: 20.0,
-            top: 16.0,
-            bottom: 140.0, // Space for bottom buttons
+            left: 20,
+            right: 20,
+            top: 16,
+            bottom: 140, // Space for bottom buttons
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +299,7 @@ class _TriageStep1FormState extends State<TriageStep1Form> {
               color: const Color(0xFFF8FAFC),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 ),

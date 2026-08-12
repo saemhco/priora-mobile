@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/shared/auth/presentation/splash_screen.dart';
-import 'package:priora/features/shared/onboarding/presentation/onboarding_screen.dart';
-import 'package:priora/features/shared/auth/presentation/login_screen.dart';
-import 'package:priora/features/shared/auth/presentation/register_screen.dart';
-import 'package:priora/features/shared/auth/presentation/forgot_password_screen.dart';
-import 'package:priora/features/shared/auth/presentation/complete_profile_screen.dart';
-import 'package:priora/features/patient/navigation/presentation/patient_navigation_screen.dart';
+import 'package:priora/features/doctor/agenda/presentation/create_block_screen.dart';
 import 'package:priora/features/doctor/navigation/presentation/doctor_navigation_screen.dart';
+import 'package:priora/features/doctor/places/domain/models/place.dart';
+import 'package:priora/features/doctor/places/presentation/create_place_screen.dart';
+import 'package:priora/features/doctor/profile/presentation/controller/doctor_profile_cubit.dart';
+import 'package:priora/features/doctor/profile/presentation/edit_doctor_profile_screen.dart';
+import 'package:priora/features/patient/home/presentation/notifications_screen.dart';
+import 'package:priora/features/patient/navigation/presentation/patient_navigation_screen.dart';
 import 'package:priora/features/patient/profile/presentation/edit_profile_screen.dart';
 import 'package:priora/features/patient/profile/presentation/map_picker_screen.dart';
-import 'package:priora/features/patient/home/presentation/notifications_screen.dart';
-import 'package:priora/features/doctor/agenda/presentation/create_block_screen.dart';
-import 'package:priora/features/doctor/places/presentation/create_place_screen.dart';
-import 'package:priora/features/doctor/profile/presentation/edit_doctor_profile_screen.dart';
+import 'package:priora/features/shared/auth/presentation/complete_profile_screen.dart';
+import 'package:priora/features/shared/auth/presentation/forgot_password_screen.dart';
+import 'package:priora/features/shared/auth/presentation/login_screen.dart';
+import 'package:priora/features/shared/auth/presentation/register_screen.dart';
+import 'package:priora/features/shared/auth/presentation/splash_screen.dart';
+import 'package:priora/features/shared/onboarding/presentation/onboarding_screen.dart';
 
 CustomTransitionPage<T> _buildTransitionPage<T>({
   required LocalKey key,
@@ -22,7 +24,6 @@ CustomTransitionPage<T> _buildTransitionPage<T>({
   return CustomTransitionPage<T>(
     key: key,
     child: child,
-    transitionDuration: const Duration(milliseconds: 300),
     reverseTransitionDuration: const Duration(milliseconds: 250),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       return FadeTransition(
@@ -31,15 +32,16 @@ CustomTransitionPage<T> _buildTransitionPage<T>({
           curve: Curves.easeInOut,
         ),
         child: SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(0.0, 0.04), // Sutil slide up
-            end: Offset.zero,
-          ).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: Curves.easeOutCubic,
-            ),
-          ),
+          position:
+              Tween<Offset>(
+                begin: const Offset(0, 0.04), // Sutil slide up
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeOutCubic,
+                ),
+              ),
           child: child,
         ),
       );
@@ -116,6 +118,7 @@ final GoRouter appRouter = GoRouter(
         final extra = state.extra as Map<String, double>?;
         final lat = extra?['latitude'] ?? -12.046374;
         final lng = extra?['longitude'] ?? -77.042793;
+
         return _buildTransitionPage(
           key: state.pageKey,
           child: MapPickerScreen(initialLatitude: lat, initialLongitude: lng),
@@ -132,7 +135,8 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/create-place',
       pageBuilder: (context, state) {
-        final place = state.extra as dynamic;
+        final place = state.extra is Place ? state.extra! as Place : null;
+
         return _buildTransitionPage(
           key: state.pageKey,
           child: CreatePlaceScreen(place: place),
@@ -148,12 +152,16 @@ final GoRouter appRouter = GoRouter(
     ),
     GoRoute(
       path: '/edit-doctor-profile',
-      pageBuilder: (context, state) => _buildTransitionPage(
-        key: state.pageKey,
-        child: EditDoctorProfileScreen(cubit: state.extra as dynamic),
-      ),
+      pageBuilder: (context, state) {
+        final cubit = state.extra is DoctorProfileCubit
+            ? state.extra! as DoctorProfileCubit
+            : null;
+
+        return _buildTransitionPage(
+          key: state.pageKey,
+          child: EditDoctorProfileScreen(cubit: cubit),
+        );
+      },
     ),
   ],
 );
-
-

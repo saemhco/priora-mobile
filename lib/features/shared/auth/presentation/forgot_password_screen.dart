@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/shared/auth/controller/forgot_password_controller.dart';
-import 'package:priora/features/shared/auth/data/auth_repository.dart';
-import 'package:priora/features/shared/auth/presentation/widgets/login_header.dart';
+import 'package:priora/features/shared/auth/domain/interfaces/auth_repository.dart';
+import 'package:priora/features/shared/auth/presentation/controller/forgot_password_controller.dart';
 import 'package:priora/features/shared/auth/presentation/widgets/forgot_password_form.dart';
+import 'package:priora/features/shared/auth/presentation/widgets/login_header.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -56,7 +56,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   SizedBox(height: size.height * 0.14),
                   // Logo & Slogan text
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

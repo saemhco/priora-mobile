@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class PlaceholderTab extends StatelessWidget {
+
+  const PlaceholderTab({required this.title, required this.icon, super.key});
   final String title;
   final IconData icon;
-
-  const PlaceholderTab({super.key, required this.title, required this.icon});
 
   @override
   Widget build(BuildContext context) {

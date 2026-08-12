@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/patient/profile/domain/models/patient_profile.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
-  final Map<String, dynamic>? profile;
-  final VoidCallback onEdit;
 
-  const ProfileHeaderCard({super.key, this.profile, required this.onEdit});
+  const ProfileHeaderCard({required this.onEdit, super.key, this.profile});
+  final PatientProfile? profile;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        String fullName = 'Paciente';
+        var fullName = 'Paciente';
         String? photoUrl;
 
         if (profile != null) {
-          final first = profile!['firstName'] ?? '';
-          final last = profile!['lastName'] ?? '';
+          final first = profile!.firstName;
+          final last = profile!.lastName;
           fullName = '$first $last'.trim();
           if (fullName.isEmpty) fullName = 'Paciente';
-          photoUrl = profile!['profilePhotoUrl'];
+          photoUrl = profile!.profilePhotoUrl;
         } else if (state is AuthAuthenticated) {
           final first = state.firstName ?? '';
           final last = state.lastName ?? '';
@@ -40,7 +41,7 @@ class ProfileHeaderCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.02),
+                color: Colors.black.withValues(alpha: 0.02),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -65,9 +66,9 @@ class ProfileHeaderCard extends StatelessWidget {
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.person, size: 40, color: Color(0xFF64748B)),
                         )
-                      : Container(
-                          color: const Color(0xFFE2E8F0),
-                          child: const Icon(
+                      : const ColoredBox(
+                          color: Color(0xFFE2E8F0),
+                          child: Icon(
                             Icons.person,
                             color: Color(0xFF64748B),
                             size: 40,

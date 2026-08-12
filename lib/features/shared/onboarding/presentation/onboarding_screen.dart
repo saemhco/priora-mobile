@@ -21,8 +21,8 @@ class OnboardingScreen extends StatelessWidget {
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: 24.0,
-                vertical: 16.0,
+                horizontal: 24,
+                vertical: 16,
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -40,8 +40,8 @@ class OnboardingScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(22),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.primary.withOpacity(
-                                0.25,
+                              color: theme.colorScheme.primary.withValues(
+                                alpha: 0.25,
                               ),
                               blurRadius: 16,
                               offset: const Offset(0, 8),
@@ -87,8 +87,8 @@ class OnboardingScreen extends StatelessWidget {
                       // Rounded Hero Image
                       Padding(
                         padding: const EdgeInsets.only(
-                          bottom: 20.0,
-                          right: 10.0,
+                          bottom: 20,
+                          right: 10,
                         ),
                         child: Container(
                           width: double.infinity,
@@ -96,7 +96,7 @@ class OnboardingScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(36),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: Colors.black.withValues(alpha: 0.08),
                                 blurRadius: 24,
                                 offset: const Offset(0, 12),
                               ),
@@ -121,7 +121,7 @@ class OnboardingScreen extends StatelessWidget {
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.92),
+                            color: Colors.white.withValues(alpha: 0.92),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: const Color(0xFFE2E8F0),
@@ -129,7 +129,7 @@ class OnboardingScreen extends StatelessWidget {
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
+                                color: Colors.black.withValues(alpha: 0.06),
                                 blurRadius: 16,
                                 offset: const Offset(0, 6),
                               ),

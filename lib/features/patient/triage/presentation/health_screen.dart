@@ -1,13 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
-import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
-import 'package:priora/features/patient/triage/data/triage_history_item.dart';
-import 'package:priora/features/patient/triage/data/triage_repository.dart';
+import 'package:priora/features/patient/triage/domain/interfaces/triage_repository.dart';
+import 'package:priora/features/patient/triage/domain/models/triage_history_item.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_state.dart';
 import 'package:priora/features/patient/triage/presentation/triage_result_screen.dart';
 import 'package:priora/features/patient/triage/presentation/triage_screen.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/patient/triage/presentation/widgets/triage_history_skeleton.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class HealthScreen extends StatefulWidget {
   const HealthScreen({super.key});
@@ -122,52 +125,54 @@ class _HealthScreenState extends State<HealthScreen> {
   }
 
   Future<void> _handleNewEvaluation() async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(
-                height: 40,
-                width: 40,
-                child: CircularProgressIndicator(
-                  color: Color(0xFF0256C2),
-                  strokeWidth: 4,
+    unawaited(
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => Dialog(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 24,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Verificando',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
+              ],
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: 40,
+                  width: 40,
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF0256C2),
+                    strokeWidth: 4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Buscando evaluaciones pendientes...',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-              ),
-            ],
+                SizedBox(height: 24),
+                Text(
+                  'Verificando',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+                SizedBox(height: 6),
+                Text(
+                  'Buscando evaluaciones pendientes...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -194,104 +199,107 @@ class _HealthScreenState extends State<HealthScreen> {
       Navigator.pop(context); // Close loading spinner
 
       if (draftData != null) {
-        showDialog(
-          context: context,
-          builder: (BuildContext dialogContext) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: const Row(
-                children: [
-                  Icon(
-                    Icons.info_outline_rounded,
-                    color: Color(0xFF0256C2),
-                    size: 28,
+        unawaited(
+          showDialog<void>(
+            context: context,
+            builder: (dialogContext) {
+              return AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                title: const Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: Color(0xFF0256C2),
+                      size: 28,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Evaluación pendiente',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
+                ),
+                content: const Text(
+                  'Tienes una evaluación de síntomas en progreso. ¿Deseas continuarla o iniciar una nueva desde cero?',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF64748B),
+                    height: 1.4,
                   ),
-                  SizedBox(width: 10),
-                  Text(
-                    'Evaluación pendiente',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Color(0xFF1E293B),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(dialogContext); // Close dialog
+                      final navigationCubit = context
+                          .read<PatientNavigationCubit>();
+                      await Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) =>
+                              TriageScreen(navigationCubit: navigationCubit),
+                        ),
+                      );
+                      await _fetchHistory();
+                    },
+                    child: const Text(
+                      'Iniciar nueva',
+                      style: TextStyle(
+                        color: Color(0xFF64748B),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.pop(dialogContext); // Close dialog
+                      final navigationCubit = context
+                          .read<PatientNavigationCubit>();
+                      await Navigator.push<void>(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) => TriageScreen(
+                            initialDraft: draftData,
+                            navigationCubit: navigationCubit,
+                          ),
+                        ),
+                      );
+                      await _fetchHistory();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0256C2),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text(
+                      'Continuar',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
-              ),
-              content: const Text(
-                'Tienes una evaluación de síntomas en progreso. ¿Deseas continuarla o iniciar una nueva desde cero?',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF64748B),
-                  height: 1.4,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext); // Close dialog
-                    final navigationCubit =
-                        context.read<PatientNavigationCubit>();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            TriageScreen(navigationCubit: navigationCubit),
-                      ),
-                    ).then((_) => _fetchHistory());
-                  },
-                  child: const Text(
-                    'Iniciar nueva',
-                    style: TextStyle(
-                      color: Color(0xFF64748B),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext); // Close dialog
-                    final navigationCubit =
-                        context.read<PatientNavigationCubit>();
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TriageScreen(
-                          initialDraft: draftData,
-                          navigationCubit: navigationCubit,
-                        ),
-                      ),
-                    ).then((_) => _fetchHistory());
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0256C2),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Continuar',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            );
-          },
+              );
+            },
+          ),
         );
       } else {
         final navigationCubit = context.read<PatientNavigationCubit>();
-        Navigator.push(
+        await Navigator.push<void>(
           context,
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (context) =>
                 TriageScreen(navigationCubit: navigationCubit),
           ),
-        ).then((_) {
-          _fetchHistory();
-        });
+        );
+        await _fetchHistory();
       }
     }
   }
@@ -311,8 +319,8 @@ class _HealthScreenState extends State<HealthScreen> {
             slivers: [
               SliverPadding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20.0,
-                  vertical: 16.0,
+                  horizontal: 20,
+                  vertical: 16,
                 ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
@@ -353,11 +361,10 @@ class _HealthScreenState extends State<HealthScreen> {
                               color: const Color(
                                 0xFFBFDBFE,
                               ), // Soft blue border
-                              width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.blue.withOpacity(0.02),
+                                color: Colors.blue.withValues(alpha: 0.02),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -382,11 +389,11 @@ class _HealthScreenState extends State<HealthScreen> {
                                 ),
                               ),
                               const SizedBox(width: 12),
-                              Expanded(
+                              const Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       '¿Deseas una nueva evaluación?',
                                       style: TextStyle(
                                         fontSize: 13,
@@ -394,8 +401,8 @@ class _HealthScreenState extends State<HealthScreen> {
                                         color: Color(0xFF1E293B),
                                       ),
                                     ),
-                                    const SizedBox(height: 1),
-                                    const Text(
+                                    SizedBox(height: 1),
+                                    Text(
                                       'Inicia una evaluación de síntomas con IA.',
                                       style: TextStyle(
                                         fontSize: 11,
@@ -421,14 +428,14 @@ class _HealthScreenState extends State<HealthScreen> {
               ),
               if (_isLoading)
                 const SliverPadding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverToBoxAdapter(child: TriageHistorySkeleton()),
                 )
               else if (_errorMessage != null)
                 SliverFillRemaining(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: const EdgeInsets.all(20),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -462,14 +469,14 @@ class _HealthScreenState extends State<HealthScreen> {
                 )
               else if (_historyItems == null || _historyItems!.isEmpty)
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverToBoxAdapter(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 40.0),
-                      child: Center(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Icon(
                               Icons.assignment_outlined,
                               size: 48,
@@ -491,7 +498,7 @@ class _HealthScreenState extends State<HealthScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final item = _historyItems![index];
@@ -501,58 +508,62 @@ class _HealthScreenState extends State<HealthScreen> {
 
                       return GestureDetector(
                         onTap: () async {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (context) => Dialog(
-                              elevation: 0,
-                              backgroundColor: Colors.transparent,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 28,
-                                  horizontal: 24,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
-                                      blurRadius: 24,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const SizedBox(
-                                      height: 40,
-                                      width: 40,
-                                      child: CircularProgressIndicator(
-                                        color: Color(0xFF0256C2),
-                                        strokeWidth: 4,
+                          unawaited(
+                            showDialog<void>(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (context) => Dialog(
+                                elevation: 0,
+                                backgroundColor: Colors.transparent,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 28,
+                                    horizontal: 24,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                        blurRadius: 24,
+                                        offset: const Offset(0, 8),
                                       ),
-                                    ),
-                                    const SizedBox(height: 24),
-                                    const Text(
-                                      'Cargando',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1E293B),
+                                    ],
+                                  ),
+                                  child: const Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        height: 40,
+                                        width: 40,
+                                        child: CircularProgressIndicator(
+                                          color: Color(0xFF0256C2),
+                                          strokeWidth: 4,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    const Text(
-                                      'Obteniendo resultados del triaje...',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF64748B),
+                                      SizedBox(height: 24),
+                                      Text(
+                                        'Cargando',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1E293B),
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(height: 6),
+                                      Text(
+                                        'Obteniendo resultados del triaje...',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Color(0xFF64748B),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -578,7 +589,7 @@ class _HealthScreenState extends State<HealthScreen> {
 
                               final rawSpecialties =
                                   result['suggestedSpecialties'];
-                              List<String> specs = [];
+                              var specs = <String>[];
                               if (rawSpecialties is List) {
                                 specs = rawSpecialties
                                     .map((s) => s.toString())
@@ -602,9 +613,9 @@ class _HealthScreenState extends State<HealthScreen> {
 
                               final navigationCubit = context
                                   .read<PatientNavigationCubit>();
-                              Navigator.push(
+                              await Navigator.push<void>(
                                 context,
-                                MaterialPageRoute(
+                                MaterialPageRoute<void>(
                                   builder: (context) => TriageResultScreen(
                                     state: state,
                                     navigationCubit: navigationCubit,
@@ -625,20 +636,19 @@ class _HealthScreenState extends State<HealthScreen> {
                           }
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 16.0),
+                          margin: const EdgeInsets.only(bottom: 16),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
+                                color: Colors.black.withValues(alpha: 0.02),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                             border: Border.all(
                               color: const Color(0xFFE2E8F0),
-                              width: 1,
                             ),
                           ),
                           child: IntrinsicHeight(
@@ -657,7 +667,7 @@ class _HealthScreenState extends State<HealthScreen> {
                                 ),
                                 Expanded(
                                   child: Padding(
-                                    padding: const EdgeInsets.all(16.0),
+                                    padding: const EdgeInsets.all(16),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -748,141 +758,6 @@ class _HealthScreenState extends State<HealthScreen> {
                 ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class TriageHistorySkeleton extends StatefulWidget {
-  const TriageHistorySkeleton({super.key});
-
-  @override
-  State<TriageHistorySkeleton> createState() => _TriageHistorySkeletonState();
-}
-
-class _TriageHistorySkeletonState extends State<TriageHistorySkeleton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-    _animation = Tween<double>(
-      begin: 0.35,
-      end: 0.85,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Opacity(opacity: _animation.value, child: child);
-      },
-      child: Column(
-        children: List.generate(3, (index) => _buildSkeletonCard()),
-      ),
-    );
-  }
-
-  Widget _buildSkeletonCard() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(
-              width: 5,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE2E8F0),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE2E8F0),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                        Container(
-                          width: 60,
-                          height: 18,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      width: 180,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE2E8F0),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Container(
-                          width: 14,
-                          height: 14,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFE2E8F0),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          width: 120,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFE2E8F0),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

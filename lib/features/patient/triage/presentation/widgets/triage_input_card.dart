@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
 class TriageInputCard extends StatelessWidget {
+
+  const TriageInputCard({
+    required this.title,
+    required this.child, this.subtitle,
+    this.icon,
+    super.key,
+  });
   final String title;
   final String? subtitle;
   final IconData? icon;
   final Widget child;
-
-  const TriageInputCard({
-    required this.title,
-    this.subtitle,
-    this.icon,
-    required this.child,
-    super.key,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class TriageInputCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0F172A).withOpacity(0.01),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.01),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

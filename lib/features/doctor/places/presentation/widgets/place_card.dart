@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:priora/features/doctor/places/data/models/place_model.dart';
+import 'package:priora/features/doctor/places/domain/models/place.dart';
 
 class PlaceCard extends StatelessWidget {
-  final PlaceModel place;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
 
   const PlaceCard({
-    super.key,
-    required this.place,
+    required this.place, super.key,
     this.onEdit,
     this.onDelete,
   });
+  final Place place;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,6 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
         seedColor: prioraBlue,
-        brightness: Brightness.light,
         primary: prioraBlue,
         secondary: prioraCyan,
         surface: backgroundLight,

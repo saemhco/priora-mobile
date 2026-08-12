@@ -1,0 +1,18 @@
+[
+  {
+    "label": "Flutter Run",
+    "command": "fvm flutter run"
+  },
+  {
+    "label": "Flutter Test",
+    "command": "fvm flutter test"
+  },
+  {
+    "label": "Flutter Analyze",
+    "command": "fvm flutter analyze"
+  },
+  {
+    "label": "Flutter Build APK",
+    "command": "fvm flutter build apk"
+  }
+]

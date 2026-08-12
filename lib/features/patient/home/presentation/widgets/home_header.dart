@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class HomeHeader extends StatelessWidget {
-  final VoidCallback? onProfileTap;
-  final VoidCallback? onNotificationsTap;
 
   const HomeHeader({super.key, this.onProfileTap, this.onNotificationsTap});
+  final VoidCallback? onProfileTap;
+  final VoidCallback? onNotificationsTap;
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +53,9 @@ class HomeHeader extends StatelessWidget {
                                 color: Color(0xFF64748B),
                               ),
                         )
-                      : Container(
-                          color: const Color(0xFFE2E8F0),
-                          child: const Icon(
+                      : const ColoredBox(
+                          color: Color(0xFFE2E8F0),
+                          child: Icon(
                             Icons.person,
                             color: Color(0xFF64748B),
                             size: 24,

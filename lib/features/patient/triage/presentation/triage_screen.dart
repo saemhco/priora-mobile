@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:priora/features/patient/navigation/controller/patient_navigation_controller.dart';
-import 'package:priora/features/patient/triage/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/domain/interfaces/triage_repository.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_cubit.dart';
+import 'package:priora/features/patient/triage/presentation/controller/triage_state.dart';
+import 'package:priora/features/patient/triage/presentation/widgets/triage_result_view.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_step1_form.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_step2_chat.dart';
 import 'package:priora/features/patient/triage/presentation/widgets/triage_step3_analysis.dart';
-import 'package:priora/features/patient/triage/presentation/widgets/triage_result_view.dart';
-import 'package:priora/features/patient/triage/data/triage_repository.dart';
-import 'package:priora/features/shared/auth/data/auth_bloc.dart';
-import 'package:priora/features/shared/auth/data/auth_state.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
+import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class TriageScreen extends StatelessWidget {
-  final Map<String, dynamic>? initialDraft;
-  final PatientNavigationCubit navigationCubit;
-
   const TriageScreen({
+    required this.navigationCubit,
     super.key,
     this.initialDraft,
-    required this.navigationCubit,
   });
+  final Map<String, dynamic>? initialDraft;
+  final PatientNavigationCubit navigationCubit;
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +38,8 @@ class TriageScreen extends StatelessWidget {
 }
 
 class _TriageScreenBody extends StatefulWidget {
-  final PatientNavigationCubit navigationCubit;
-
   const _TriageScreenBody({required this.navigationCubit});
+  final PatientNavigationCubit navigationCubit;
 
   @override
   State<_TriageScreenBody> createState() => _TriageScreenBodyState();
@@ -56,9 +55,9 @@ class _TriageScreenBodyState extends State<_TriageScreenBody> {
   }
 
   void _showExitConfirmation(BuildContext context, TriageCubit cubit) {
-    showDialog(
+    showDialog<void>(
       context: context,
-      builder: (BuildContext dialogContext) {
+      builder: (dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
