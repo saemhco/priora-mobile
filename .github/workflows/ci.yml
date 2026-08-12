@@ -89,5 +89,15 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Prepare environment file
+        # `.env` is gitignored (local secrets) but is declared as an asset in
+        # pubspec.yaml, so the asset bundle build (required by `flutter test`)
+        # fails when the file is missing. Copy the committed example; the app
+        # falls back to default values when variables are empty.
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env
+          fi
+
       - name: Run tests
         run: flutter test
