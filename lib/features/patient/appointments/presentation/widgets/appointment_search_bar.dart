@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppointmentSearchBar extends StatelessWidget {
-
   const AppointmentSearchBar({
     required this.onChanged,
     super.key,

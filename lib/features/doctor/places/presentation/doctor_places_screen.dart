@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:priora/features/doctor/places/presentation/controller/places_cubit.dart' show PlacesCubit;
+import 'package:priora/features/doctor/places/presentation/controller/places_cubit.dart'
+    show PlacesCubit;
 import 'package:priora/features/doctor/places/presentation/widgets/places_body.dart';
 
 /// Doctor's places of care screen. It only composes the widget tree; the

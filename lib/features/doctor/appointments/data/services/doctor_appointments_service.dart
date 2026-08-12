@@ -22,7 +22,9 @@ class DoctorAppointmentsService {
       final data = response.data;
       if (data is List) {
         return data
-            .map((e) => DoctorAppointmentDto.fromJson(e as Map<String, dynamic>))
+            .map(
+              (e) => DoctorAppointmentDto.fromJson(e as Map<String, dynamic>),
+            )
             .toList();
       }
       return [];

@@ -24,7 +24,9 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       final repository = RepositoryProvider.of<AuthRepository>(context);
-      _appointmentsFuture = repository.getMyAppointments(accessToken: authState.accessToken);
+      _appointmentsFuture = repository.getMyAppointments(
+        accessToken: authState.accessToken,
+      );
     } else {
       _appointmentsFuture = Future.value([]);
     }
@@ -34,13 +36,26 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
     final dt = DateTime.tryParse(datetimeStr)?.toLocal();
     if (dt == null) return datetimeStr;
 
-    final months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    final months = [
+      'Ene',
+      'Feb',
+      'Mar',
+      'Abr',
+      'May',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dic',
+    ];
     final day = dt.day;
     final month = months[dt.month - 1];
     final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
     final minute = dt.minute.toString().padLeft(2, '0');
     final period = dt.hour >= 12 ? 'PM' : 'AM';
-    
+
     // Check if it is today or tomorrow
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -165,15 +180,19 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
         }).toList();
 
         // Separar citas pendientes (no completadas) de las completadas
-        final pendingAppointments = activeAppointments.where((app) {
-          final status = app['status']?.toString().toUpperCase() ?? '';
-          return status != 'COMPLETED';
-        }).toList()
-          ..sort((a, b) {
-            final dtA = DateTime.tryParse(a['datetime']?.toString() ?? '') ?? DateTime.now();
-            final dtB = DateTime.tryParse(b['datetime']?.toString() ?? '') ?? DateTime.now();
-            return dtA.compareTo(dtB);
-          });
+        final pendingAppointments =
+            activeAppointments.where((app) {
+              final status = app['status']?.toString().toUpperCase() ?? '';
+              return status != 'COMPLETED';
+            }).toList()..sort((a, b) {
+              final dtA =
+                  DateTime.tryParse(a['datetime']?.toString() ?? '') ??
+                  DateTime.now();
+              final dtB =
+                  DateTime.tryParse(b['datetime']?.toString() ?? '') ??
+                  DateTime.now();
+              return dtA.compareTo(dtB);
+            });
 
         // De las pendientes, quedarse con las que aún son válidas
         // (no pasaron hace más de 2 horas)
@@ -184,22 +203,26 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
         }).toList();
 
         // Citas completadas (más recientes primero) como respaldo
-        final completedAppointments = activeAppointments.where((app) {
-          final status = app['status']?.toString().toUpperCase() ?? '';
-          return status == 'COMPLETED';
-        }).toList()
-          ..sort((a, b) {
-            final dtA = DateTime.tryParse(a['datetime']?.toString() ?? '') ?? DateTime.now();
-            final dtB = DateTime.tryParse(b['datetime']?.toString() ?? '') ?? DateTime.now();
-            return dtB.compareTo(dtA);
-          });
+        final completedAppointments =
+            activeAppointments.where((app) {
+              final status = app['status']?.toString().toUpperCase() ?? '';
+              return status == 'COMPLETED';
+            }).toList()..sort((a, b) {
+              final dtA =
+                  DateTime.tryParse(a['datetime']?.toString() ?? '') ??
+                  DateTime.now();
+              final dtB =
+                  DateTime.tryParse(b['datetime']?.toString() ?? '') ??
+                  DateTime.now();
+              return dtB.compareTo(dtA);
+            });
 
         // Priorizar pendientes; si no hay, mostrar la completada más reciente
         final nextApp = upcomingAppointments.isNotEmpty
             ? upcomingAppointments.first
             : (completedAppointments.isNotEmpty
-                ? completedAppointments.first
-                : null);
+                  ? completedAppointments.first
+                  : null);
 
         if (nextApp == null) {
           // No upcoming appointments: Render a friendly message placeholder
@@ -260,16 +283,24 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
         }
 
         // Get the closest upcoming appointment
-        final isCompleted = (nextApp['status']?.toString().toUpperCase() ?? '') == 'COMPLETED';
-        final docData = nextApp['doctor'] ?? nextApp['professional'] ?? nextApp['professionalProfile'];
+        final isCompleted =
+            (nextApp['status']?.toString().toUpperCase() ?? '') == 'COMPLETED';
+        final docData =
+            nextApp['doctor'] ??
+            nextApp['professional'] ??
+            nextApp['professionalProfile'];
         final docName = docData != null
-            ? '${docData['firstName'] ?? docData['name'] ?? ''} ${docData['lastName'] ?? ''}'.trim()
+            ? '${docData['firstName'] ?? docData['name'] ?? ''} ${docData['lastName'] ?? ''}'
+                  .trim()
             : 'Médico Especialista';
         final docPhoto = docData != null ? docData['profilePhotoUrl'] : null;
         final specialty = nextApp['specialty']?.toString() ?? 'Especialista';
-        final meetingType = nextApp['meetingType']?.toString().toUpperCase() ?? 'VIRTUAL';
+        final meetingType =
+            nextApp['meetingType']?.toString().toUpperCase() ?? 'VIRTUAL';
         final placeData = nextApp['place'];
-        final placeName = placeData != null ? placeData['name']?.toString() : null;
+        final placeName = placeData != null
+            ? placeData['name']?.toString()
+            : null;
 
         final hasDocPhoto = docPhoto != null && docPhoto.toString().isNotEmpty;
 
@@ -321,7 +352,9 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        isCompleted ? 'Completada' : (nextApp['status']?.toString() ?? 'Confirmada'),
+                        isCompleted
+                            ? 'Completada'
+                            : (nextApp['status']?.toString() ?? 'Confirmada'),
                         style: const TextStyle(
                           color: Color(0xFF00CBB8),
                           fontSize: 13,
@@ -349,11 +382,12 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                           ? Image.network(
                               docPhoto.toString(),
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.person,
-                                color: Color(0xFF64748B),
-                                size: 30,
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                    Icons.person,
+                                    color: Color(0xFF64748B),
+                                    size: 30,
+                                  ),
                             )
                           : const Icon(
                               Icons.person,
@@ -391,7 +425,10 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
 
               // Sub-card with Details
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
                   borderRadius: BorderRadius.circular(16),
@@ -422,7 +459,9 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  _formatDateTime(nextApp['datetime']?.toString() ?? ''),
+                                  _formatDateTime(
+                                    nextApp['datetime']?.toString() ?? '',
+                                  ),
                                   style: const TextStyle(
                                     color: Color(0xFF334155),
                                     fontSize: 13,
@@ -435,14 +474,20 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                         ],
                       ),
                     ),
-                    Container(width: 1, height: 32, color: const Color(0xFFE2E8F0)),
+                    Container(
+                      width: 1,
+                      height: 32,
+                      color: const Color(0xFFE2E8F0),
+                    ),
                     const SizedBox(width: 12),
                     // Location Column
                     Expanded(
                       child: Row(
                         children: [
                           Icon(
-                            meetingType == 'VIRTUAL' ? Icons.videocam_outlined : Icons.location_on_outlined,
+                            meetingType == 'VIRTUAL'
+                                ? Icons.videocam_outlined
+                                : Icons.location_on_outlined,
                             color: const Color(0xFF0256C2),
                             size: 22,
                           ),
@@ -461,7 +506,9 @@ class _NextAppointmentCardState extends State<NextAppointmentCard> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  meetingType == 'VIRTUAL' ? 'Teleconsulta' : (placeName ?? 'Presencial'),
+                                  meetingType == 'VIRTUAL'
+                                      ? 'Teleconsulta'
+                                      : (placeName ?? 'Presencial'),
                                   style: const TextStyle(
                                     color: Color(0xFF334155),
                                     fontSize: 13,

@@ -24,8 +24,8 @@ class PersonalInfoCard extends StatelessWidget {
     final genderIdentity = rawGender == 'MAN'
         ? 'Hombre'
         : (rawGender == 'WOMAN'
-            ? 'Mujer'
-            : (profile?.genderIdentity ?? 'No registrado'));
+              ? 'Mujer'
+              : (profile?.genderIdentity ?? 'No registrado'));
 
     // Format DOB
     final dobStr = profile?.dateOfBirth ?? 'No registrada';

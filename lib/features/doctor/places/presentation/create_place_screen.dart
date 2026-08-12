@@ -25,41 +25,40 @@ class CreatePlaceScreen extends StatefulWidget {
 
 class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
   final _formKey = GlobalKey<FormState>();
-  CreatePlaceController? _controller;
+  late final CreatePlaceController _controller;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_controller == null) {
-      final authState = context.read<AuthBloc>().state;
-      final accessToken = authState is AuthAuthenticated
-          ? authState.accessToken
-          : '';
-      _controller = CreatePlaceController(
-        placesCubit: getIt<PlacesCubit>(),
-        accessToken: accessToken,
-        place: widget.place,
-      );
-    }
+  void initState() {
+    super.initState();
+    final authState = context.read<AuthBloc>().state;
+    final accessToken = authState is AuthAuthenticated
+        ? authState.accessToken
+        : '';
+    _controller = CreatePlaceController(
+      placesCubit: getIt<PlacesCubit>(),
+      accessToken: accessToken,
+      place: widget.place,
+    );
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
   Future<void> _handleSave() async {
-    if (!_formKey.currentState!.validate()) return;
+    final formState = _formKey.currentState;
+    if (formState == null || !formState.validate()) return;
 
-    final success = await _controller!.save();
+    final success = await _controller.save();
     if (!mounted) return;
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _controller!.isEditing
+            _controller.isEditing
                 ? 'Lugar actualizado exitosamente'
                 : 'Lugar creado exitosamente',
           ),
@@ -81,9 +80,10 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
     return BlocProvider<PlacesCubit>.value(
       value: getIt<PlacesCubit>(),
       child: ListenableBuilder(
-        listenable: _controller!,
+        listenable: _controller,
         builder: (context, child) {
-          final isEditing = _controller!.isEditing;
+          final isEditing = _controller.isEditing;
+
           return Scaffold(
             backgroundColor: const Color(0xFFF8FAFC),
             appBar: AppBar(
@@ -135,14 +135,14 @@ class _CreatePlaceScreenState extends State<CreatePlaceScreen> {
                     CreatePlaceBanner(isEditing: isEditing),
                     const SizedBox(height: 24),
                     CreatePlaceForm(
-                      controller: _controller!,
+                      controller: _controller,
                       formKey: _formKey,
                     ),
                     const SizedBox(height: 24),
-                    CreatePlaceMapButton(controller: _controller!),
+                    CreatePlaceMapButton(controller: _controller),
                     const SizedBox(height: 32),
                     CreatePlaceActionButtons(
-                      controller: _controller!,
+                      controller: _controller,
                       onSave: _handleSave,
                     ),
                     const SizedBox(height: 24),

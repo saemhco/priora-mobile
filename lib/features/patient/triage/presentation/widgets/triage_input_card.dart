@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class TriageInputCard extends StatelessWidget {
-
   const TriageInputCard({
     required this.title,
-    required this.child, this.subtitle,
+    required this.child,
+    this.subtitle,
     this.icon,
     super.key,
   });

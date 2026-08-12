@@ -4,9 +4,10 @@ import 'package:priora/core/widgets/static_map_preview.dart';
 import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 
 class LocationSection extends StatelessWidget {
-
   const LocationSection({
-    required this.controller, required this.isLoading, super.key,
+    required this.controller,
+    required this.isLoading,
+    super.key,
   });
   final CompleteProfileController controller;
   final bool isLoading;

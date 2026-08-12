@@ -3,9 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/presentation/controller/login_controller.dart';
 
 class LoginForm extends StatelessWidget {
-
   const LoginForm({
-    required this.controller, required this.isLoading, super.key,
+    required this.controller,
+    required this.isLoading,
+    super.key,
   });
   final LoginController controller;
   final bool isLoading;

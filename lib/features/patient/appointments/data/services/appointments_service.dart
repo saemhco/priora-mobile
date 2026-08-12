@@ -37,9 +37,7 @@ class AppointmentsService {
         if (possibleList is List) {
           return possibleList;
         } else {
-          return data.values
-                  .whereType<List<dynamic>>()
-                  .firstOrNull ??
+          return data.values.whereType<List<dynamic>>().firstOrNull ??
               <dynamic>[];
         }
       }

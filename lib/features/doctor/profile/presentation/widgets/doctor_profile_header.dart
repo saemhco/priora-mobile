@@ -9,8 +9,8 @@ class DoctorProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasPhoto = profile.profilePhotoUrl != null &&
-        profile.profilePhotoUrl!.isNotEmpty;
+    final hasPhoto =
+        profile.profilePhotoUrl != null && profile.profilePhotoUrl!.isNotEmpty;
     return Column(
       children: [
         Stack(
@@ -102,12 +102,8 @@ class DoctorProfileHeader extends StatelessWidget {
         final isPrimary = index.isEven;
         return _buildTag(
           tags[index],
-          isPrimary
-              ? const Color(0xFFE0F7F6)
-              : const Color(0xFFF1F5F9),
-          isPrimary
-              ? const Color(0xFF0C6159)
-              : const Color(0xFF64748B),
+          isPrimary ? const Color(0xFFE0F7F6) : const Color(0xFFF1F5F9),
+          isPrimary ? const Color(0xFF0C6159) : const Color(0xFF64748B),
         );
       }),
     );

@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:priora/features/shared/auth/domain/interfaces/auth_repository.dart';
 
 class ForgotPasswordController extends ChangeNotifier {
-
   ForgotPasswordController({required this._authRepository});
   final AuthRepository _authRepository;
   final emailController = TextEditingController();
-  
+
   bool isLoading = false;
   bool isSuccess = false;
   String? errorMessage;

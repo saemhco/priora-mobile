@@ -96,9 +96,7 @@ class AgendaController extends ChangeNotifier {
     if (_selectedFilterId == null) {
       filtered = allSchedules;
     } else if (isVirtualSelected) {
-      filtered = allSchedules
-          .where((s) => s.meetingType == 'VIRTUAL')
-          .toList();
+      filtered = allSchedules.where((s) => s.meetingType == 'VIRTUAL').toList();
     } else {
       filtered = allSchedules
           .where(
@@ -206,8 +204,18 @@ class AgendaController extends ChangeNotifier {
     final sunday = monday.add(const Duration(days: 6));
 
     const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+      'Enero',
+      'Febrero',
+      'Marzo',
+      'Abril',
+      'Mayo',
+      'Junio',
+      'Julio',
+      'Agosto',
+      'Septiembre',
+      'Octubre',
+      'Noviembre',
+      'Diciembre',
     ];
 
     if (monday.month == sunday.month) {

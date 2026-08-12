@@ -7,7 +7,6 @@ import 'package:priora/features/doctor/agenda/presentation/widgets/delete_block_
 /// true` + `blockId` when the user confirms the deletion. - `success: false`
 /// when the user cancels or there are no blocks.
 class DeleteBlockSheet extends StatefulWidget {
-
   const DeleteBlockSheet({required this.blocks, super.key});
   final List<WeeklySchedule> blocks;
 
@@ -17,7 +16,13 @@ class DeleteBlockSheet extends StatefulWidget {
 
 class _DeleteBlockSheetState extends State<DeleteBlockSheet> {
   static const List<String> _dayLabels = [
-    'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo',
+    'Lunes',
+    'Martes',
+    'Miércoles',
+    'Jueves',
+    'Viernes',
+    'Sábado',
+    'Domingo',
   ];
 
   String? _selectedBlockId;
@@ -279,8 +284,7 @@ class _DeleteBlockSheetState extends State<DeleteBlockSheet> {
               children: [
                 Expanded(
                   child: TextButton(
-                    onPressed: () =>
-                        setState(() => _isConfirming = false),
+                    onPressed: () => setState(() => _isConfirming = false),
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -365,9 +369,7 @@ class _DeleteBlockSheetState extends State<DeleteBlockSheet> {
               ),
               alignment: Alignment.center,
               child: Icon(
-                isVirtual
-                    ? Icons.videocam_rounded
-                    : Icons.business_rounded,
+                isVirtual ? Icons.videocam_rounded : Icons.business_rounded,
                 color: isVirtual
                     ? const Color(0xFF0256C2)
                     : const Color(0xFF059669),

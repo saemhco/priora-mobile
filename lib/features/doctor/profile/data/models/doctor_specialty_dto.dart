@@ -13,9 +13,7 @@ class DoctorSpecialtyDto {
     return DoctorSpecialtyDto(
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
-      professionName: profession is Map
-          ? profession['name']?.toString()
-          : null,
+      professionName: profession is Map ? profession['name']?.toString() : null,
     );
   }
 

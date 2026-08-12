@@ -44,23 +44,23 @@ class DoctorAppointmentsScreen extends StatelessWidget {
                     child: state.isLoading
                         ? const AppointmentsLoading()
                         : state.loadError != null
-                            ? AppointmentsError(cubit: cubit)
-                            : TabBarView(
-                                children: [
-                                  AppointmentsList(
-                                    appointments: state.todayAppointments,
-                                    onRefresh: cubit.loadAppointments,
-                                  ),
-                                  AppointmentsList(
-                                    appointments: state.upcomingAppointments,
-                                    onRefresh: cubit.loadAppointments,
-                                  ),
-                                  AppointmentsList(
-                                    appointments: state.pastAppointments,
-                                    onRefresh: cubit.loadAppointments,
-                                  ),
-                                ],
+                        ? AppointmentsError(cubit: cubit)
+                        : TabBarView(
+                            children: [
+                              AppointmentsList(
+                                appointments: state.todayAppointments,
+                                onRefresh: cubit.loadAppointments,
                               ),
+                              AppointmentsList(
+                                appointments: state.upcomingAppointments,
+                                onRefresh: cubit.loadAppointments,
+                              ),
+                              AppointmentsList(
+                                appointments: state.pastAppointments,
+                                onRefresh: cubit.loadAppointments,
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),

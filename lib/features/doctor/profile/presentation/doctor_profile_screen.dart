@@ -37,8 +37,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     final authState = context.read<AuthBloc>().state;
     if (authState is AuthAuthenticated) {
       context.read<PlacesCubit>().loadPlaces(
-            accessToken: authState.accessToken,
-          );
+        accessToken: authState.accessToken,
+      );
     }
   }
 

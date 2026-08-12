@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 class SubmitProfileButton extends StatelessWidget {
-
   const SubmitProfileButton({
-    required this.onSubmit, required this.isLoading, super.key,
+    required this.onSubmit,
+    required this.isLoading,
+    super.key,
   });
   final VoidCallback onSubmit;
   final bool isLoading;

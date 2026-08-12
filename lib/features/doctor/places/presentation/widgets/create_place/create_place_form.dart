@@ -6,7 +6,9 @@ import 'package:priora/features/doctor/places/presentation/controller/create_pla
 /// address.
 class CreatePlaceForm extends StatelessWidget {
   const CreatePlaceForm({
-    required this.controller, required this.formKey, super.key,
+    required this.controller,
+    required this.formKey,
+    super.key,
   });
 
   final CreatePlaceController controller;

@@ -3,9 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/presentation/controller/register_controller.dart';
 
 class RegisterForm extends StatelessWidget {
-
   const RegisterForm({
-    required this.controller, required this.isLoading, super.key,
+    required this.controller,
+    required this.isLoading,
+    super.key,
   });
   final RegisterController controller;
   final bool isLoading;

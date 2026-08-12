@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:priora/features/shared/auth/presentation/controller/forgot_password_controller.dart';
 
 class ForgotPasswordForm extends StatelessWidget {
-
   const ForgotPasswordForm({
-    required this.controller, super.key,
+    required this.controller,
+    super.key,
   });
   final ForgotPasswordController controller;
 

@@ -63,7 +63,10 @@ class AppointmentsRepositoryImpl implements AppointmentsRepository {
   }) async {
     final list = await _service.fetchMyAppointments(accessToken: accessToken);
     return list
-        .map((item) => PatientAppointmentDto.fromApiJson(item as Map<String, dynamic>))
+        .map(
+          (item) =>
+              PatientAppointmentDto.fromApiJson(item as Map<String, dynamic>),
+        )
         .map((dto) => dto.toDomain())
         .toList();
   }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:priora/features/patient/triage/presentation/controller/triage_state.dart';
 
 class TriageStep3Analysis extends StatelessWidget {
-
   const TriageStep3Analysis({
-    required this.state, super.key,
+    required this.state,
+    super.key,
   });
   final TriageState state;
 

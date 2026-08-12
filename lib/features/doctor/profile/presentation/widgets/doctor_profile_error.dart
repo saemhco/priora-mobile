@@ -32,8 +32,7 @@ class DoctorProfileError extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () =>
-                  context.read<DoctorProfileCubit>().loadProfile(),
+              onPressed: () => context.read<DoctorProfileCubit>().loadProfile(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0256C2),
                 foregroundColor: Colors.white,

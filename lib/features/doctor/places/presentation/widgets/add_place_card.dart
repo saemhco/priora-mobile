@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AddPlaceCard extends StatelessWidget {
-
   const AddPlaceCard({super.key, this.onTap});
   final VoidCallback? onTap;
 

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class TriageHeader extends StatelessWidget {
-
   const TriageHeader({
     required this.currentStep,
     required this.totalSteps,

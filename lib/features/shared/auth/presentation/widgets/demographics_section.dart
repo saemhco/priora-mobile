@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:priora/features/shared/auth/presentation/controller/complete_profile_controller.dart';
 
 class DemographicsSection extends StatelessWidget {
-
   const DemographicsSection({
-    required this.controller, required this.isLoading, super.key,
+    required this.controller,
+    required this.isLoading,
+    super.key,
   });
   final CompleteProfileController controller;
   final bool isLoading;
@@ -138,39 +139,49 @@ class DemographicsSection extends StatelessWidget {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: [
-                  'Mujer',
-                  'Hombre',
-                  'No binario',
-                  'Otro',
-                  'Prefiero no decir'
-                ].map((gender) {
-                  final isSelected = controller.genderIdentity == gender;
-                  return OutlinedButton(
-                    onPressed: isLoading
-                        ? null
-                        : () => controller.setGenderIdentity(gender),
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: isSelected ? const Color(0xFFEEF2F6) : Colors.white,
-                      side: BorderSide(
-                        color: isSelected ? const Color(0xFF0256C2) : const Color(0xFFE2E8F0),
-                        width: 1.5,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    ),
-                    child: Text(
-                      gender,
-                      style: TextStyle(
-                        color: isSelected ? const Color(0xFF0256C2) : const Color(0xFF1E293B),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
-                  );
-                }).toList(),
+                children:
+                    [
+                      'Mujer',
+                      'Hombre',
+                      'No binario',
+                      'Otro',
+                      'Prefiero no decir',
+                    ].map((gender) {
+                      final isSelected = controller.genderIdentity == gender;
+                      return OutlinedButton(
+                        onPressed: isLoading
+                            ? null
+                            : () => controller.setGenderIdentity(gender),
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: isSelected
+                              ? const Color(0xFFEEF2F6)
+                              : Colors.white,
+                          side: BorderSide(
+                            color: isSelected
+                                ? const Color(0xFF0256C2)
+                                : const Color(0xFFE2E8F0),
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                        ),
+                        child: Text(
+                          gender,
+                          style: TextStyle(
+                            color: isSelected
+                                ? const Color(0xFF0256C2)
+                                : const Color(0xFF1E293B),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 18),
 
@@ -184,7 +195,10 @@ class DemographicsSection extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(16),
@@ -194,9 +208,14 @@ class DemographicsSection extends StatelessWidget {
                     value: controller.occupation,
                     hint: const Text('Seleccionar...'),
                     isExpanded: true,
-                    style: const TextStyle(color: Color(0xFF1E293B), fontSize: 15),
-                    icon: const Icon(Icons.keyboard_arrow_down_rounded,
-                        color: Color(0xFF64748B)),
+                    style: const TextStyle(
+                      color: Color(0xFF1E293B),
+                      fontSize: 15,
+                    ),
+                    icon: const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      color: Color(0xFF64748B),
+                    ),
                     onChanged: isLoading ? null : controller.setOccupation,
                     items: controller.occupationsList
                         .map(

@@ -5,9 +5,10 @@ import 'package:latlong2/latlong.dart';
 /// Lightweight, non-interactive preview of a map using OpenStreetMap tiles
 /// via [FlutterMap].
 class StaticMapPreview extends StatelessWidget {
-
   const StaticMapPreview({
-    required this.latitude, required this.longitude, super.key,
+    required this.latitude,
+    required this.longitude,
+    super.key,
     this.zoom = 14,
     this.height = 150,
     this.borderRadius,
@@ -40,8 +41,7 @@ class StaticMapPreview extends StatelessWidget {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.dope.priora',
                   maxZoom: 19,
                 ),

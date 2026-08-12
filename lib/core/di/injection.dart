@@ -29,7 +29,6 @@ import 'package:priora/features/shared/auth/data/services/auth_service.dart';
 import 'package:priora/features/shared/auth/domain/interfaces/auth_repository.dart';
 import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.dart';
 
-
 final GetIt getIt = GetIt.instance;
 
 Future<void> initInjection() async {
@@ -98,5 +97,4 @@ Future<void> initInjection() async {
   getIt.registerLazySingleton<PlacesCubit>(
     () => PlacesCubit(getIt<PlacesRepository>()),
   );
-
 }

@@ -98,13 +98,17 @@ class AgendaCalendarView extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: BoxDecoration(
               border: Border.all(color: const Color(0xFFE2E8F0), width: 0.5),
-              color: isToday ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+              color: isToday
+                  ? const Color(0xFFEFF6FF)
+                  : const Color(0xFFF8FAFC),
             ),
             child: Text(
               kDayLabels[index],
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isToday ? const Color(0xFF0256C2) : const Color(0xFF64748B),
+                color: isToday
+                    ? const Color(0xFF0256C2)
+                    : const Color(0xFF64748B),
                 fontSize: 13,
                 fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
                 letterSpacing: 0.5,

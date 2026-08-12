@@ -5,7 +5,6 @@ import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.da
 import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class ProfileHeaderCard extends StatelessWidget {
-
   const ProfileHeaderCard({required this.onEdit, super.key, this.profile});
   final PatientProfile? profile;
   final VoidCallback onEdit;
@@ -30,7 +29,6 @@ class ProfileHeaderCard extends StatelessWidget {
           if (fullName.isEmpty) fullName = 'Paciente';
           photoUrl = state.profilePhotoUrl;
         }
-
 
         final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
 
@@ -64,7 +62,11 @@ class ProfileHeaderCard extends StatelessWidget {
                           photoUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.person, size: 40, color: Color(0xFF64748B)),
+                              const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Color(0xFF64748B),
+                              ),
                         )
                       : const ColoredBox(
                           color: Color(0xFFE2E8F0),
@@ -96,33 +98,37 @@ class ProfileHeaderCard extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-          const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-          // Edit Button
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton.icon(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined, size: 18, color: Colors.white),
-              label: const Text(
-                'Editar perfil',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0256C2),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+              // Edit Button
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                  label: const Text(
+                    'Editar perfil',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0256C2),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
                 ),
-                elevation: 0,
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  },
-);
   }
 }

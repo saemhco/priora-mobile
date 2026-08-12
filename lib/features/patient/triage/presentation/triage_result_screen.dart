@@ -4,9 +4,10 @@ import 'package:priora/features/patient/triage/presentation/controller/triage_st
 import 'package:priora/features/patient/triage/presentation/widgets/triage_result_view.dart';
 
 class TriageResultScreen extends StatelessWidget {
-
   const TriageResultScreen({
-    required this.state, required this.navigationCubit, super.key,
+    required this.state,
+    required this.navigationCubit,
+    super.key,
   });
   final TriageState state;
   final PatientNavigationCubit navigationCubit;

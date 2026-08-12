@@ -6,7 +6,9 @@ import 'package:priora/features/doctor/appointments/presentation/widgets/appoint
 /// Bottom sheet to cancel an appointment, with optional quick reasons.
 class CancelAppointmentSheet extends StatefulWidget {
   const CancelAppointmentSheet({
-    required this.appointment, required this.onCancel, super.key,
+    required this.appointment,
+    required this.onCancel,
+    super.key,
   });
 
   static const List<String> quickReasons = [
@@ -20,8 +22,7 @@ class CancelAppointmentSheet extends StatefulWidget {
   final Future<CancelAppointmentResult> Function(String? reason) onCancel;
 
   @override
-  State<CancelAppointmentSheet> createState() =>
-      _CancelAppointmentSheetState();
+  State<CancelAppointmentSheet> createState() => _CancelAppointmentSheetState();
 }
 
 class _CancelAppointmentSheetState extends State<CancelAppointmentSheet> {
@@ -174,8 +175,7 @@ class _CancelAppointmentSheetState extends State<CancelAppointmentSheet> {
               spacing: 8,
               runSpacing: 8,
               children: CancelAppointmentSheet.quickReasons.map((reason) {
-                final isSelected =
-                    _reasonController.text.trim() == reason;
+                final isSelected = _reasonController.text.trim() == reason;
                 return GestureDetector(
                   onTap: () {
                     setState(() {

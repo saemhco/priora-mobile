@@ -26,7 +26,7 @@ class TriageState {
   });
 
   final int
-      currentStep; // 1: Antecedentes, 2: Motivo, 3: Análisis, 4: Preguntas adicionales
+  currentStep; // 1: Antecedentes, 2: Motivo, 3: Análisis, 4: Preguntas adicionales
   final String surgeries;
   final List<String> chronicConditions;
   final String otherChronicConditions;

@@ -6,9 +6,10 @@ import 'package:priora/features/patient/triage/presentation/widgets/triage_heade
 import 'package:priora/features/patient/triage/presentation/widgets/triage_input_card.dart';
 
 class TriageStep1Form extends StatefulWidget {
-
   const TriageStep1Form({
-    required this.accessToken, required this.state, super.key,
+    required this.accessToken,
+    required this.state,
+    super.key,
   });
   final String accessToken;
   final TriageState state;
@@ -147,9 +148,10 @@ class _TriageStep1FormState extends State<TriageStep1Form> {
                       spacing: 8,
                       runSpacing: 8,
                       children: _commonConditions.map((condition) {
-                        final isSelected = widget.state.chronicConditions.contains(
-                          condition,
-                        );
+                        final isSelected = widget.state.chronicConditions
+                            .contains(
+                              condition,
+                            );
                         return GestureDetector(
                           onTap: () => _cubit.toggleChronicCondition(condition),
                           child: Container(

@@ -4,7 +4,8 @@ import 'package:priora/features/patient/appointments/presentation/controller/app
 /// Toggle para mostrar u ocultar citas pasadas en "Mis citas".
 class PastAppointmentsToggle extends StatelessWidget {
   const PastAppointmentsToggle({
-    required this.controller, super.key,
+    required this.controller,
+    super.key,
   });
 
   final AppointmentsController controller;

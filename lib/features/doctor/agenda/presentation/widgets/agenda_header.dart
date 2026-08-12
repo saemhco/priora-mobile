@@ -28,8 +28,7 @@ class AgendaHeader extends StatelessWidget {
             final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
             // Al presionar el avatar se navega al tab de Perfil
             return GestureDetector(
-              onTap: () =>
-                  context.read<DoctorNavigationCubit>().changeIndex(3),
+              onTap: () => context.read<DoctorNavigationCubit>().changeIndex(3),
               child: Container(
                 width: 40,
                 height: 40,

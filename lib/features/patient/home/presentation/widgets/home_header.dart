@@ -4,7 +4,6 @@ import 'package:priora/features/shared/auth/presentation/controller/auth_bloc.da
 import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 
 class HomeHeader extends StatelessWidget {
-
   const HomeHeader({super.key, this.onProfileTap, this.onNotificationsTap});
   final VoidCallback? onProfileTap;
   final VoidCallback? onNotificationsTap;

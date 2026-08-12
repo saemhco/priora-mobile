@@ -19,8 +19,7 @@ class DoctorNavigationScreen extends StatefulWidget {
   const DoctorNavigationScreen({super.key});
 
   @override
-  State<DoctorNavigationScreen> createState() =>
-      _DoctorNavigationScreenState();
+  State<DoctorNavigationScreen> createState() => _DoctorNavigationScreenState();
 }
 
 class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
@@ -32,8 +31,9 @@ class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
   void initState() {
     super.initState();
     final authState = getIt<AuthBloc>().state;
-    final accessToken =
-        authState is AuthAuthenticated ? authState.accessToken : '';
+    final accessToken = authState is AuthAuthenticated
+        ? authState.accessToken
+        : '';
     _appointmentsCubit = DoctorAppointmentsCubit(
       getIt<DoctorAppointmentsRepository>(),
       accessToken,

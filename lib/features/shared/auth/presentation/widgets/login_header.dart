@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class LoginHeader extends StatelessWidget {
-
   const LoginHeader({required this.height, super.key});
   final double height;
 

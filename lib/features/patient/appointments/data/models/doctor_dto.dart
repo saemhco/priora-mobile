@@ -132,9 +132,7 @@ class DoctorDto {
             ? DateTime.parse(dateStr)
             : DateTime.parse(slots.first).toLocal();
         final now = DateTime.now();
-        if (dt.day == now.day &&
-            dt.month == now.month &&
-            dt.year == now.year) {
+        if (dt.day == now.day && dt.month == now.month && dt.year == now.year) {
           nextDate = 'HOY, ${_formatDayMonth(dt)}';
         } else if (dt.day == now.day + 1 &&
             dt.month == now.month &&
@@ -205,8 +203,18 @@ class DoctorDto {
 
   static String _formatDayMonth(DateTime dt) {
     const months = [
-      'ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN',
-      'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC',
+      'ENE',
+      'FEB',
+      'MAR',
+      'ABR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AGO',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DIC',
     ];
     return '${dt.day} ${months[dt.month - 1]}';
   }

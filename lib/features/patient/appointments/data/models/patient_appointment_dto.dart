@@ -37,12 +37,12 @@ class PatientAppointmentDto {
       specName = specData.toString();
     } else if (doc['specialties'] is List &&
         (doc['specialties'] as List).isNotEmpty) {
-      specName = (doc['specialties'] as List).first['name']?.toString() ??
-          'General';
+      specName =
+          (doc['specialties'] as List).first['name']?.toString() ?? 'General';
     } else if (doc['professionalProfile']?['specialties'] is List &&
         (doc['professionalProfile']?['specialties'] as List).isNotEmpty) {
-      specName = (doc['professionalProfile']?['specialties'] as List)
-              .first['name']
+      specName =
+          (doc['professionalProfile']?['specialties'] as List).first['name']
               ?.toString() ??
           'General';
     }
@@ -52,8 +52,7 @@ class PatientAppointmentDto {
       avatar = doc['profilePhotoUrl']?.toString() ?? '';
     }
     if (avatar.isEmpty) {
-      avatar =
-          doc['professionalProfile']?['profilePhotoUrl']?.toString() ?? '';
+      avatar = doc['professionalProfile']?['profilePhotoUrl']?.toString() ?? '';
     }
     if (avatar.isEmpty) {
       avatar =
@@ -66,10 +65,12 @@ class PatientAppointmentDto {
     if (dtRaw != null) {
       try {
         final dt = DateTime.parse(dtRaw.toString()).toLocal();
-        dateStr = '${dt.day.toString().padLeft(2, '0')}/'
+        dateStr =
+            '${dt.day.toString().padLeft(2, '0')}/'
             '${dt.month.toString().padLeft(2, '0')}/'
             '${dt.year}';
-        timeStr = '${dt.hour.toString().padLeft(2, '0')}:'
+        timeStr =
+            '${dt.hour.toString().padLeft(2, '0')}:'
             '${dt.minute.toString().padLeft(2, '0')}';
       } catch (_) {
         dateStr = dtRaw.toString();
@@ -85,7 +86,8 @@ class PatientAppointmentDto {
       doctorName: docName,
       doctorSpecialty: specName,
       doctorAvatar: avatar,
-      isVirtual: item['isVirtual'] == true ||
+      isVirtual:
+          item['isVirtual'] == true ||
           item['meetingType']?.toString().toUpperCase() == 'VIRTUAL',
       status: item['status']?.toString() ?? 'Reservada',
     );
