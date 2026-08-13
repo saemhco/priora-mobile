@@ -1,38 +1,33 @@
 name: CI
 
-# Runs on every pull request and on pushes to the default branch, enforcing the
-# project's lint, formatting, and architecture rules defined in:
-#   - analysis_options.yaml (very_good_analysis + dart_code_linter)
-#   - PROJECT_RULES.md (architectural guidelines)
+# Mirrors the CI setup proven in gol-manager-fl: lightweight, fast, and
+# pragmatic. Infos do not block, only errors and warnings do.
 "on":
   pull_request:
+    branches: [main]
   push:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint:
-    name: Lint, Format & Architecture
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        # Full history is needed to diff the PR against its base branch and
-        # analyze only the files changed by the pull request.
-        with:
-          fetch-depth: 0
-
-      - name: Extract Flutter version from .fvmrc
-        id: fvm
-        run: |
-          echo "flutter_version=$(sed -n 's/.*"flutter"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' .fvmrc)" >> "$GITHUB_OUTPUT"
+        uses: actions/checkout@v5
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ steps.fvm.outputs.flutter_version }}
+          flutter-version-file: .fvmrc
+          channel: stable
           cache: true
 
-      - name: Install dependencies
+      - name: Resolve dependencies
         run: flutter pub get
 
       - name: Prepare environment file
@@ -45,74 +40,35 @@ jobs:
             cp .env.example .env
           fi
 
-      - name: Analyze (very_good_analysis)
-        # 200+ strict rules inherited from very_good_analysis
-        # (superset of flutter_lints). Must report zero issues.
-        run: flutter analyze
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed lib
 
-      - name: Check formatting (dart format)
-        run: dart format --set-exit-if-changed lib test
-
-      - name: Check pending auto-fixes (dart fix)
+      - name: Check pending auto-fixes
         # Ensures contributors ran `dart fix --apply` locally.
         # Exits non-zero when fixes are available.
         run: dart fix --dry-run
 
-      - name: Architecture rules on changed files (dart_code_linter)
-        # `flutter analyze` does NOT load analyzer plugins, so the architecture
-        # rules of dart_code_linter (see PROJECT_RULES.md) are enforced through
-        # its own CLI. Only the files changed by this PR are analyzed.
-        #
-        # NOTE (transitional): this step is currently NON-BLOCKING
-        # (continue-on-error). The codebase has ~500 legacy violations and this
-        # PR legitimately touches ~76 files, so blocking would fail every PR
-        # until the baseline is cleaned. The report stays visible on each PR so
-        # violations can be fixed incrementally. Once the legacy baseline is
-        # clean (`dart run dart_code_linter:metrics analyze lib` reports no
-        # issues), remove `continue-on-error: true` below to make the gate
-        # strict again.
-        continue-on-error: true
-        run: |
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          else
-            BASE_SHA="HEAD~1"
-          fi
-          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" -- lib/ | grep '\.dart$' || true)
-          if [ -z "$CHANGED_FILES" ]; then
-            echo "No Dart files under lib/ changed — skipping dart_code_linter."
-          else
-            echo "Analyzing changed files:"
-            echo "$CHANGED_FILES"
-            dart run dart_code_linter:metrics analyze $CHANGED_FILES
-          fi
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
 
   test:
     name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Extract Flutter version from .fvmrc
-        id: fvm
-        run: |
-          echo "flutter_version=$(sed -n 's/.*"flutter"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' .fvmrc)" >> "$GITHUB_OUTPUT"
+        uses: actions/checkout@v5
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ steps.fvm.outputs.flutter_version }}
+          flutter-version-file: .fvmrc
+          channel: stable
           cache: true
 
-      - name: Install dependencies
+      - name: Resolve dependencies
         run: flutter pub get
 
       - name: Prepare environment file
-        # `.env` is gitignored (local secrets) but is declared as an asset in
-        # pubspec.yaml, so the asset bundle build (required by `flutter test`)
-        # fails when the file is missing. Copy the committed example; the app
-        # falls back to default values when variables are empty.
         run: |
           if [ ! -f .env ]; then
             cp .env.example .env

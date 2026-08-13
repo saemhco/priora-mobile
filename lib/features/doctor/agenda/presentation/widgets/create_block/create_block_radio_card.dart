@@ -36,9 +36,7 @@ class CreateBlockRadioCard extends StatelessWidget {
           children: [
             Radio<String>(
               value: value,
-              // ignore: deprecated_member_use
               groupValue: groupValue,
-              // ignore: deprecated_member_use
               onChanged: onChanged,
               activeColor: const Color(0xFF0256C2),
             ),

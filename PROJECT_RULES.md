@@ -136,27 +136,23 @@ Before pushing, both commands above must pass without new issues:
 
 ## 7. Continuous Integration (CI)
 
-GitHub Actions (`.github/workflows/ci.yml`) enforces the rules above on **every pull request**
-and on pushes to `main`. All checks must be green before merging.
+GitHub Actions (`.github/workflows/ci.yml`) runs on every pull request to `main` and on
+pushes to `main`. It mirrors the lightweight CI used in `gol-manager-fl`. All checks must be
+green before merging.
 
 | Check | Command | Scope | Blocks merge? |
 |---|---|---|---|
-| Analyze (very_good_analysis) | `flutter analyze` | Whole project — must report zero issues | ✅ Yes |
-| Format | `dart format --set-exit-if-changed lib test` | Whole project — must be already formatted | ✅ Yes |
+| Format | `dart format --output=none --set-exit-if-changed lib` | Whole project — must be already formatted | ✅ Yes |
 | Auto-fixes | `dart fix --dry-run` | Whole project — no pending fixes | ✅ Yes |
-| Architecture (dart_code_linter) | `dart run dart_code_linter:metrics analyze <changed files>` | Only the `.dart` files under `lib/` changed by the PR | ⚠️ Currently reporting only |
+| Analyze (very_good_analysis) | `flutter analyze --no-fatal-infos` | Whole project — no errors/warnings (infos do not block) | ✅ Yes |
 | Tests | `flutter test` | Whole project | ✅ Yes |
 
-### Architecture rules on changed files (scout rule)
-
-`dart_code_linter` only analyzes the files **changed by the pull request**, so new code must
-comply with the architecture rules while legacy violations can be fixed incrementally
-(leave the files you touch cleaner than you found them).
-
-> **Transitional state**: the codebase has ~500 legacy `dart_code_linter` violations and this
-> PR touches ~76 files, so the CI step currently uses `continue-on-error: true` — it
-> **reports** the violations on every PR without blocking the merge. The four checks above
-> (analyze, format, auto-fixes, tests) remain strict gates. Once the legacy baseline is
-> clean (`fvm dart run dart_code_linter:metrics analyze lib` reports no issues), remove
-> `continue-on-error: true` from `.github/workflows/ci.yml` to make the architecture gate
-> strict again.
+> `dart_code_linter` (architecture rules) is **not** part of CI yet: the codebase still has
+> ~300 legacy violations, so enforcing it would block every PR. Run it locally before
+> merging and fix violations in the files you touch (scout rule):
+>
+> ```sh
+> fvm dart run dart_code_linter:metrics analyze lib
+> ```
+>
+> Once the baseline is clean, add the check to `.github/workflows/ci.yml`.

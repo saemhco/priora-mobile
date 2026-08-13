@@ -117,9 +117,7 @@ class CreateBlockLocationSelector extends StatelessWidget {
                       ),
                       Radio<String>(
                         value: place.id,
-                        // ignore: deprecated_member_use
                         groupValue: controller.selectedPlace?.id,
-                        // ignore: deprecated_member_use
                         onChanged: (v) {
                           if (v != null) {
                             controller.setSelectedPlace(place);
