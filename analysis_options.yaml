@@ -13,8 +13,29 @@
 include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
-  # NOTE: `flutter analyze` / `dart analyze` CLI do NOT load analyzer plugins.
-  # dart_code_linter must be run via its own CLI, see PROJECT_RULES.md.
+  # Pragmatic overrides: noisy or low-value diagnostics are downgraded to
+  # `ignore` (same approach used in gol-manager-fl) so they neither pollute
+  # the IDE nor block `flutter analyze`.
+  errors:
+    # Untyped API JSON responses are accessed directly throughout the UI.
+    avoid_dynamic_calls: ignore
+    # Flutter SDK deprecations (e.g. Radio.groupValue/onChanged) are handled
+    # globally instead of with per-line ignore comments.
+    deprecated_member_use: ignore
+    # 80-char line limit (re-enable after a full `dart format` pass if desired).
+    lines_longer_than_80_chars: ignore
+    # Pure style: cascade notation is optional.
+    cascade_invocations: ignore
+    # Catching untyped errors (`catch (e)`) is intentional for SDK/runtime errors.
+    avoid_catches_without_on_clauses: ignore
+    # Fire-and-forget futures in event handlers / state updates are intentional.
+    discarded_futures: ignore
+    # Positional booleans are natural in simple setters.
+    avoid_positional_boolean_parameters: ignore
+    # Method-based state changes are fine.
+    use_setters_to_change_properties: ignore
+    # Allow standard ignore comments without mandatory documentation above them.
+    document_ignores: ignore
 
   exclude:
     - build/**
@@ -24,25 +45,8 @@ analyzer:
 
 linter:
   rules:
-    # Disabled (too noisy for this codebase):
-    # - Requires doc comments on every public member.
+    # Requires doc comments on every public member (too noisy).
     public_member_api_docs: false
-    # - Enforces 80-char lines (re-enable after running `dart format`).
-    lines_longer_than_80_chars: false
-    # - Cascade notation is a style preference and can make sequential registration blocks less readable.
-    cascade_invocations: false
-    # - Enforcing "on Exception catch" ignores custom errors or TypeError subclasses which are common.
-    avoid_catches_without_on_clauses: false
-    # - Too pedantic for event handlers, UI side effects, and state updates.
-    discarded_futures: false
-    # - Positional boolean parameters are extremely common and natural in Dart.
-    avoid_positional_boolean_parameters: false
-    # - Changing properties via standard methods is standard and readable.
-    use_setters_to_change_properties: false
-    # - Untyped API JSON responses are accessed directly throughout the UI.
-    avoid_dynamic_calls: false
-    # - Disable document_ignores (allows standard ignores without forcing redundant comments above every ignore statement).
-    document_ignores: false
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CUSTOM RULES (dart_code_linter)
@@ -76,8 +80,8 @@ dart_code_linter:
     - prefer-immediate-return
     - prefer-using-list-view
     # ── Disabled: pure-style rules, too noisy for this codebase ─────────
-    # newline-before-return     (145 issues: blank line before `return`)
-    # prefer-moving-to-variable (67 issues: repeated expressions → variable)
-    # avoid-nested-conditional-expressions (24 issues)
-    # prefer-conditional-expressions (6 issues)
-    # prefer-trailing-comma     (2 issues; already enforced by `dart format`)
+    # newline-before-return     (blank line before `return`)
+    # prefer-moving-to-variable (repeated expressions → variable)
+    # avoid-nested-conditional-expressions
+    # prefer-conditional-expressions
+    # prefer-trailing-comma     (already enforced by `dart format`)
