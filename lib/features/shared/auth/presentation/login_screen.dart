@@ -29,31 +29,35 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _handleAuthState(BuildContext context, AuthState state) {
+    if (state is AuthError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (state is AuthEmailVerificationRequired) {
+      context.go('/verify-email', extra: state.email);
+    } else if (state is AuthAuthenticated) {
+      if (!state.profileComplete) {
+        context.go('/complete-profile');
+      } else if (state.role == 'professional') {
+        context.go('/doctor');
+      } else {
+        context.go('/patient');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final size = MediaQuery.of(context).size;
 
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.redAccent,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        } else if (state is AuthAuthenticated) {
-          if (!state.profileComplete) {
-            context.go('/complete-profile');
-          } else if (state.role == 'professional') {
-            context.go('/doctor');
-          } else {
-            context.go('/patient');
-          }
-        }
-      },
+      listener: _handleAuthState,
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final isLoading = state is AuthLoading;

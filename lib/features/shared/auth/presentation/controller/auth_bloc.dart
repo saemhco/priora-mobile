@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:priora/features/shared/auth/domain/interfaces/auth_repository.dart';
+import 'package:priora/features/shared/auth/domain/models/email_not_verified_exception.dart';
 import 'package:priora/features/shared/auth/presentation/controller/auth_event.dart';
 import 'package:priora/features/shared/auth/presentation/controller/auth_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({required this._authRepository}) : super(const AuthInitial()) {
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
+    on<AuthVerifyEmailRequested>(_onVerifyEmailRequested);
+    on<AuthResendVerificationRequested>(_onResendVerificationRequested);
     on<AuthGoogleLoginRequested>(_onGoogleLoginRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthUpdateProfileRequested>(_onUpdateProfileRequested);
@@ -105,16 +108,41 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(const AuthLoading());
     try {
-      final result = await _authRepository.register(
+      final pending = await _authRepository.register(
         event.email,
         event.password,
       );
+
+      // Registration creates the account but does NOT issue tokens: the
+      // email must first be confirmed with the OTP.
+      emit(
+        AuthEmailVerificationRequired(
+          email: pending.email.isEmpty ? event.email : pending.email,
+          sent: pending.sent,
+          retryAfterSeconds: pending.retryAfterSeconds,
+          remainingToday: pending.remainingToday,
+        ),
+      );
+    } catch (e) {
+      emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  Future<void> _onVerifyEmailRequested(
+    AuthVerifyEmailRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(const AuthLoading());
+    try {
+      final result = await _authRepository.verifyEmail(
+        email: event.email,
+        code: event.code,
+      );
       final role = result.user.role.toLowerCase();
-      final token = result.accessToken;
       final profileComplete = result.user.profileComplete;
 
       await _saveSession(
-        accessToken: token,
+        accessToken: result.accessToken,
         refreshToken: result.refreshToken,
         role: role,
         profileComplete: profileComplete,
@@ -123,12 +151,36 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthAuthenticated(
           role: role,
-          accessToken: token,
+          accessToken: result.accessToken,
           profileComplete: profileComplete,
         ),
       );
     } catch (e) {
       emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+    }
+  }
+
+  Future<void> _onResendVerificationRequested(
+    AuthResendVerificationRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    final previous = state;
+    try {
+      final pending = await _authRepository.resendVerification(event.email);
+      emit(
+        AuthEmailVerificationRequired(
+          email: pending.email.isEmpty ? event.email : pending.email,
+          sent: pending.sent,
+          retryAfterSeconds: pending.retryAfterSeconds,
+          remainingToday: pending.remainingToday,
+        ),
+      );
+    } catch (e) {
+      emit(AuthError(e.toString().replaceAll('Exception: ', '')));
+      if (previous is AuthEmailVerificationRequired) {
+        // Restore the verification screen state after showing the error.
+        emit(previous);
+      }
     }
   }
 
@@ -173,6 +225,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           firstName: firstName,
           lastName: lastName,
           profilePhotoUrl: profilePhotoUrl,
+        ),
+      );
+    } on EmailNotVerifiedException catch (e) {
+      // The account exists but the email was never verified → OTP flow.
+      emit(
+        AuthEmailVerificationRequired(
+          email: e.email.isEmpty ? event.email : e.email,
+          retryAfterSeconds: e.retryAfterSeconds,
         ),
       );
     } catch (e) {

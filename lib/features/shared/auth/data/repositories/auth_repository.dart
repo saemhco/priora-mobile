@@ -1,6 +1,7 @@
 import 'package:priora/features/shared/auth/data/services/auth_service.dart';
 import 'package:priora/features/shared/auth/domain/interfaces/auth_repository.dart';
 import 'package:priora/features/shared/auth/domain/models/auth_response.dart';
+import 'package:priora/features/shared/auth/domain/models/email_verification_pending.dart';
 
 /// Implementation of the contract [AuthRepository] using [AuthService].
 class AuthRepositoryImpl implements AuthRepository {
@@ -15,9 +16,25 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthResponse> register(String email, String password) async {
-    final data = await _service.register(email, password);
+  Future<EmailVerificationPending> register(
+    String email,
+    String password,
+  ) {
+    return _service.register(email, password);
+  }
+
+  @override
+  Future<AuthResponse> verifyEmail({
+    required String email,
+    required String code,
+  }) async {
+    final data = await _service.verifyEmail(email, code);
     return AuthResponse.fromJson(data);
+  }
+
+  @override
+  Future<EmailVerificationPending> resendVerification(String email) {
+    return _service.resendVerification(email);
   }
 
   @override

@@ -11,6 +11,7 @@ import 'package:priora/features/patient/navigation/presentation/patient_navigati
 import 'package:priora/features/patient/profile/presentation/edit_profile_screen.dart';
 import 'package:priora/features/patient/profile/presentation/map_picker_screen.dart';
 import 'package:priora/features/shared/auth/presentation/complete_profile_screen.dart';
+import 'package:priora/features/shared/auth/presentation/email_verification_screen.dart';
 import 'package:priora/features/shared/auth/presentation/forgot_password_screen.dart';
 import 'package:priora/features/shared/auth/presentation/login_screen.dart';
 import 'package:priora/features/shared/auth/presentation/register_screen.dart';
@@ -89,6 +90,15 @@ final GoRouter appRouter = GoRouter(
       pageBuilder: (context, state) => _buildTransitionPage(
         key: state.pageKey,
         child: const CompleteProfileScreen(),
+      ),
+    ),
+    GoRoute(
+      path: '/verify-email',
+      pageBuilder: (context, state) => _buildTransitionPage(
+        key: state.pageKey,
+        child: EmailVerificationScreen(
+          email: state.extra as String? ?? '',
+        ),
       ),
     ),
     GoRoute(
