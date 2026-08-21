@@ -29,28 +29,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  void _handleAuthState(BuildContext context, AuthState state) {
+    if (state is AuthError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } else if (state is AuthEmailVerificationRequired) {
+      context.go('/verify-email', extra: state.email);
+    } else if (state is AuthAuthenticated) {
+      if (!state.profileComplete) {
+        context.go('/complete-profile');
+      } else if (state.role == 'doctor') {
+        context.go('/doctor');
+      } else {
+        context.go('/patient');
+      }
+    }
+  }
+
+  void _handleBackPressed(BuildContext context) {
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      context.go('/onboarding');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, state) {
-        if (state is AuthError) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.redAccent,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        } else if (state is AuthAuthenticated) {
-          if (!state.profileComplete) {
-            context.go('/complete-profile');
-          } else if (state.role == 'doctor') {
-            context.go('/doctor');
-          } else {
-            context.go('/patient');
-          }
-        }
-      },
+      listener: _handleAuthState,
       child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           final isLoading = state is AuthLoading;
@@ -60,13 +72,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             appBar: AppBar(
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-                onPressed: () {
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.of(context).pop();
-                  } else {
-                    context.go('/onboarding');
-                  }
-                },
+                onPressed: () => _handleBackPressed(context),
               ),
               title: const Text(''),
               backgroundColor: Colors.transparent,

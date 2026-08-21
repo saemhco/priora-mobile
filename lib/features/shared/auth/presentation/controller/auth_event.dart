@@ -14,6 +14,17 @@ class AuthRegisterRequested extends AuthEvent {
   final String password;
 }
 
+class AuthVerifyEmailRequested extends AuthEvent {
+  const AuthVerifyEmailRequested({required this.email, required this.code});
+  final String email;
+  final String code;
+}
+
+class AuthResendVerificationRequested extends AuthEvent {
+  const AuthResendVerificationRequested({required this.email});
+  final String email;
+}
+
 class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }

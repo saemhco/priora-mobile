@@ -31,6 +31,21 @@ class AuthUnauthenticated extends AuthState {
   const AuthUnauthenticated();
 }
 
+/// The account exists but the email still needs OTP confirmation
+/// (returned by register or by login with 403 EMAIL_NOT_VERIFIED).
+class AuthEmailVerificationRequired extends AuthState {
+  const AuthEmailVerificationRequired({
+    required this.email,
+    this.sent = true,
+    this.retryAfterSeconds = 600,
+    this.remainingToday = 5,
+  });
+  final String email;
+  final bool sent;
+  final int retryAfterSeconds;
+  final int remainingToday;
+}
+
 class AuthError extends AuthState {
   const AuthError(this.message);
   final String message;
